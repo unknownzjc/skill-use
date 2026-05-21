@@ -1,7 +1,8 @@
 ---
 name: ship
-
-description: Route feature-branch shipping work in the current session. Infer one mode—`commit only`, `PR only`, or `full`—and run only that playbook.
+description: "Selects and runs the correct shipping playbook—`commit only`, `PR only`, or `full`—while preserving in-session state."
+when_to_use: "ship it, 提交, 提交一下, 保存改动, commit, commit only, 发 PR, 创建 PR, open PR, pull request, push, 推送, 提交并发 PR, 提交并创建 PR, commit and PR"
+dispatch_intent: "Commit local changes, push existing commits, open a PR, complete commit-to-PR shipping flow, resume blocked shipping flow"
 disable-model-invocation: true
 metadata:
   version: 1.0.0
