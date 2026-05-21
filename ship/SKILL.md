@@ -1,8 +1,10 @@
 ---
 name: ship
+
 description: Route feature-branch shipping work in the current session. Infer one mode—`commit only`, `PR only`, or `full`—and run only that playbook.
 disable-model-invocation: true
-allowed-tools: Bash Read Glob Grep AskUserQuestion
+metadata:
+  version: 1.0.0
 ---
 
 ## Role
@@ -13,7 +15,7 @@ allowed-tools: Bash Read Glob Grep AskUserQuestion
 
 ## When to use
 
-```dot
+````dot
 digraph when_to_use {
     "Need to submit work from the current branch?" [shape=diamond];
     "On a feature branch targeting the base branch?" [shape=diamond];
@@ -109,3 +111,4 @@ digraph process {
 - For `PR only`, read `pr.md` and run only that playbook.
 - For `full`, read `full.md` and run only that playbook.
 - Do not read the other playbooks unless the user explicitly changes scope.
+````
