@@ -1,11 +1,11 @@
 ---
-name: semantic-branch-fix
+name: create-branch
 description: Given a natural-language task, bug, feature, refactor, or improvement description, create a concise semantic git branch from it, switch to that branch, then start implementing or fixing the described work. Use when the user wants to begin work from a description and expects automatic branch creation before code changes.
 metadata:
   version: 1.0.0
 ---
 
-# Semantic Branch Fix
+# Create Branch
 
 ## Goal
 
@@ -22,7 +22,7 @@ Example triggers:
 - `修复用户登录后偶发跳回登录页的问题`
 - `创建分支并实现导出用户资料`
 - `根据这段描述开一个语义化分支然后开始改`
-- `/skill:semantic-branch-fix 支付成功后订单状态没有及时刷新`
+- `/skill:create-branch 支付成功后订单状态没有及时刷新`
 
 Do **not** use this skill for pure discussion, design-only work, code review only, or shipping/PR tasks after the work is already done.
 
