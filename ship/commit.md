@@ -47,8 +47,9 @@ digraph process {
    - `Do not create a commit`
 5. Never stage `.env`, `.env.*`, private keys, tokens, credential files, or other obvious secrets.
 6. If the user chooses specific files, ask for explicit file paths and stage only those paths.
-7. Run `git diff --staged` to inspect the exact staged diff before committing. Do not use plain `git diff` for this check.
-8. Write a commit message following these rules:
+7. Run `git diff --staged` to inspect the exact staged diff before committing. Do not use plain `git diff` for this check, and do not treat `git diff --staged --stat` as a substitute for the exact diff.
+8. Do not edit files to clean up the staged diff during shipping. If the exact staged diff contains suspicious, accidental, dead, or unrelated code, ask one clarifying question about whether to continue as-is, stop for the user to fix it, or explicitly allow the assistant to fix it.
+9. Write a commit message following these rules:
    - Format: `<type>: <description>`
    - Allowed types: `fix`, `feat`, `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`
    - Use English for the description
@@ -56,8 +57,8 @@ digraph process {
    - Do not exceed 72 characters
    - Do not capitalize the first letter of the description
    - Do not end with a period
-9. Never use emoji in commit messages.
-10. Do not add co-author metadata such as `Co-authored-by:` trailers.
+10. Never use emoji in commit messages.
+11. Do not add co-author metadata such as `Co-authored-by:` trailers.
 
 ### Output
 

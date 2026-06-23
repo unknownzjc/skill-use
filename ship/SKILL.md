@@ -5,14 +5,15 @@ when_to_use: "ship it, 提交, 提交一下, 保存改动, commit, commit only, 
 dispatch_intent: "Commit local changes, push existing commits, open a PR, complete commit-to-PR shipping flow, resume blocked shipping flow"
 disable-model-invocation: true
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 ## Role
 
 - This skill is a router for feature-branch shipping.
-- Recover context first, infer one mode, and read only the matching playbook.
+- Recover context first, run one structured preflight, infer one mode, and read only the matching playbook.
 - Resume an in-flight shipping flow from current state unless the user explicitly changes scope.
+- After preflight, execute only one fixed path: `commit_only`, `pr_only`, or `full`.
 
 ## When to use
 
@@ -47,7 +48,7 @@ digraph when_to_use {
 digraph process {
     rankdir=TB;
 
-    "Read latest exchange and current git state" [shape=box];
+    "Run one structured preflight" [shape=box];
     "Blocked shipping flow?" [shape=diamond];
     "Resume from blocked step" [shape=box];
     "Infer one mode" [shape=box];
@@ -61,7 +62,7 @@ digraph process {
     "Ask one clarifying question and wait" [shape=box];
     "Run remaining steps" [shape=box];
 
-    "Read latest exchange and current git state" -> "Blocked shipping flow?";
+    "Run one structured preflight" -> "Blocked shipping flow?";
     "Blocked shipping flow?" -> "Resume from blocked step" [label="yes"];
     "Blocked shipping flow?" -> "Infer one mode" [label="no"];
     "Resume from blocked step" -> "On base or protected trunk branch?";
@@ -83,14 +84,19 @@ digraph process {
 - Resolve intent in this order:
   1. Pending question in the latest exchange
   2. Explicit user intent in the new reply
-  3. Current repo state
+  3. Structured preflight state
   4. One clarifying question only if still ambiguous
 - Complete all non-blocked steps in one run.
+- Start with one structured preflight command block instead of repeated exploratory probes.
+- Use preflight fields as the source of truth for mode selection, branch safety, base/head confirmation, staged/unstaged counts, ahead commits, remote branch presence, PR template presence, and `gh` auth status.
+- After preflight, follow exactly one path: `commit_only`, `pr_only`, or `full`; do not keep re-running discovery commands unless state changes or a command fails.
 - Never operate directly on the base branch or protected trunk branches such as `main`, `master`, or configured release branches.
 - Do not expand scope. `commit only` must not create a PR. `PR only` must not create a commit.
+- Do not edit working tree files during shipping unless the user explicitly asks for that edit. If the diff reveals suspicious, accidental, dead, or unrelated code, stop and ask whether to continue shipping as-is or pause for a fix.
 - In `full` mode, completing the commit phase, including after a blocking staging question, does not end the session. Proceed directly to the PR flow without asking for permission to continue.
 - In `PR only` and `full`, explicitly evaluate branch rename before push; do not skip that decision.
 - Reuse existing state when possible.
+- At the start, explicitly confirm `head=<current_branch> -> base=<target_base>` only if the head equals the base, the base cannot be resolved, or the requested base conflicts with preflight state.
 
 ## Mode inference
 
@@ -99,7 +105,7 @@ digraph process {
   - `commit only` for requests that only save local changes.
   - `PR only` for requests that only push or open a PR from existing commits.
   - `full` for `ship it`, `发PR`, `提交并发PR`, `提交并创建PR`, or any request to both submit changes and open a PR.
-- If intent is implicit:
+- If intent is implicit, decide from preflight fields:
   - Local changes present and request implies submission: choose `full`.
   - No local changes, but commits exist ahead of the upstream base branch, such as `origin/<base>`: choose `PR only`.
   - Local changes present and request focuses on saving work, without PR language: choose `commit only`.
