@@ -41,8 +41,11 @@ Before editing any implementation file:
 
 - Follow the plan step by step.
 - Touch only files listed as in scope. If a required change needs an out-of-scope file, stop and report the STOP condition instead of improvising.
+- Maintain a scope guard while editing: after each write/edit or before the final report, compare changed files against the plan's in-scope list plus the selected plan file/index status updates. If any implementation file is outside scope, stop and report unless the user explicitly approved the expansion.
+- If the plan contains a `UI Interaction Contract`, implement against that contract, not just the file/step list. Preserve the specified entry point, data/state model, dependency rules, feedback states, existing-data compatibility, copy/i18n, accessibility basics, and manual smoke expectations.
 - Run each verification command named by the plan, unless it is unavailable in this environment; if unavailable, record exactly why.
 - Prefer targeted verification during the step, then run the plan's full done criteria at the end.
+- For UI-facing plans, also run or manually perform the plan's smoke checklist where the environment allows. If a browser or running app is required but unavailable, record the exact unchecked smoke items.
 - If a verification fails, make reasonable in-scope fixes and rerun. If the same gate fails twice, stop and report.
 - Keep changes minimal and traceable to the plan's intent.
 
@@ -61,6 +64,8 @@ PLAN: <path>
 STATUS: DONE | BLOCKED | STOPPED
 CHANGES: <files changed, grouped by purpose>
 VERIFICATION: <commands run and results>
+UI SMOKE: <checked items, skipped items, or not applicable>
+SCOPE: <confirm only in-scope files changed, or list approved deviations>
 NOTES: <pre-existing dirty files, deviations, skipped checks, or follow-up>
 ```
 

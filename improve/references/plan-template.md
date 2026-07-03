@@ -85,6 +85,80 @@ Out of scope — do not touch unless the operator approves:
 - `<path or area>` — <why excluded>
 - `<behavior/API>` — <compatibility or risk reason>
 
+## UI Interaction Contract
+
+Include this section only when the plan changes user-facing UI, forms, settings screens, dialogs, navigation, visible state, or interaction behavior. If the UI change is trivial, write one sentence explaining why a full contract is unnecessary.
+
+User goal and success:
+
+- <What task the user is trying to complete.>
+- <What is true when the user succeeds and how success is visible.>
+
+Entry and placement:
+
+- <Where the UI is entered from and where it lives: page/dialog/tab/menu/inline/etc.>
+- <Visibility gates: permissions, feature flags, user role, data availability, environment.>
+
+Data and state model:
+
+- <Source of truth: server/settings/store/URL/local storage/props/derived data.>
+- <Initial load, draft vs persisted state, dirty state, save/cancel/reset/refetch/close/reload behavior.>
+- <Other UI or application areas that must observe the change.>
+
+Controls and input model:
+
+- <Controls to use and why: input/select/combobox/radio/switch/table/etc.>
+- <Finite vs dynamic vs custom values; behavior for empty option lists and saved values not in the list.>
+
+Dependency and lifecycle rules:
+
+- <Parent-child field dependencies and recomputation rules.>
+- <Whether dependent values are preserved, reset, cleared, disabled, or shown as unknown/custom.>
+- <Stale request handling, parent selection/context/type changes, cleanup rules, and data-loss protections.>
+
+Feedback states:
+
+| State | Trigger | UI behavior | User action |
+|---|---|---|---|
+| Loading | <trigger> | <behavior> | <action or none> |
+| Empty | <trigger> | <behavior> | <action or none> |
+| Error | <trigger> | <behavior> | <retry/fix/etc.> |
+| Saving | <trigger> | <behavior> | <action or none> |
+| Saved | <trigger> | <behavior> | <action or none> |
+| Disabled | <trigger> | <behavior/explanation> | <action or none> |
+
+Existing data compatibility:
+
+- <Missing/legacy/unknown values: preserve, migrate, ignore, clean, or show as current unknown/custom.>
+- <Sensitive value or credential masking, clearing, and overwrite semantics if relevant.>
+- <What prevents accidental data loss.>
+
+Copy, terminology, and i18n:
+
+- <User-visible labels, option names, helper text, empty/error/success copy.>
+- <Which i18n files or copy conventions to follow.>
+- <Product terms to use instead of internal field names.>
+
+Accessibility and keyboard behavior:
+
+- <Labels, error association, focus behavior, keyboard path, disabled explanation.>
+
+UI decision log:
+
+| Decision | Chosen default | Confidence | Risk | Reason |
+|---|---|---|---|---|
+| <decision> | <default> | high/medium/low | low/medium/high | <repo evidence or UX rule> |
+
+Manual smoke checklist:
+
+- [ ] Open the UI from `<entry point>`.
+- [ ] Confirm initial persisted values load correctly.
+- [ ] Exercise the primary happy path.
+- [ ] Exercise dependency changes and invalid/empty option behavior.
+- [ ] Exercise save success and reload persistence.
+- [ ] Exercise validation or save failure if feasible.
+- [ ] Confirm i18n/copy and keyboard basics for the touched UI.
+
 ## Implementation steps
 
 ### Step 1: <imperative step title>
@@ -208,6 +282,8 @@ Before finishing a plan, verify:
 - Every step names exact files, symbols, commands, or expected behavior.
 - Every verification has a command and expected result.
 - Scope and out-of-scope sections are specific.
+- UI-facing plans include a UI Interaction Contract, or explicitly explain why the UI change is trivial.
+- UI-facing plans make data/state, dependency behavior, feedback states, copy/i18n, accessibility basics, existing-data compatibility, and manual smoke checks explicit.
 - STOP conditions are relevant to this plan, not generic boilerplate only.
 - Done criteria are machine-checkable.
 - Could a weaker executor follow the plan without making product or architecture decisions.
