@@ -36,13 +36,17 @@ Record the facts the executor needs:
 - Current-state file paths and line references.
 - Compatibility, product, security, migration, or data constraints.
 
+For cross-boundary work (for example backend-to-public API, adapter-to-facade, database-to-API, SDK-to-product, service-to-UI/CLI), inspect the **target layer's** adjacent patterns before choosing names, paths, shapes, or terminology. Do not copy source-layer implementation names by default; map them to the target layer's existing taxonomy and record the evidence for the chosen default.
+
 For UI-facing work, read `references/ui-interaction-contract.md` and inspect nearby UI, design-system components, i18n, loading/error/empty states, validation/save/cancel patterns, and state-management conventions.
 
 ## 3. Resolve ambiguity
 
-Ask only when a decision is both material and high risk, such as data loss, security/sensitive-data handling, irreversible behavior, saved-data shape, external API semantics, or product terminology that changes meaning.
+Resolve ambiguity from evidence before asking: repo docs/design notes, target-layer neighboring code, tests, generated specs, existing callers, then common industry conventions. Choose the least surprising repo-consistent default and document the evidence.
 
-For low-risk ambiguity, choose the repo-consistent default and document it as an assumption, UI decision, or STOP condition.
+Ask only when a decision remains material and high risk after recon, such as data loss, security/sensitive-data handling, irreversible behavior, saved-data shape, external/public contract semantics, product terminology that changes meaning, or a boundary choice that changes long-term architecture.
+
+For low-risk ambiguity, choose the repo-consistent default and document it as an assumption, decision note, or STOP condition.
 
 When asking, ask exactly one focused question with 2–4 concrete options and a recommended default.
 
@@ -70,7 +74,7 @@ Each plan must include the material required by `references/plan-template.md`, e
 - Status metadata and planned-at commit.
 - Why this matters.
 - Current state with file paths and line references.
-- Repo conventions and verified commands.
+- Repo conventions, verified commands, and any evidence-backed decisions that prevent executor improvisation.
 - Scope and out-of-scope boundaries.
 - Ordered steps with verification gates.
 - Test plan, done criteria, STOP conditions, and maintenance notes.
@@ -85,6 +89,7 @@ Before delivering, fix high-signal gaps only:
 - Are commands verified from repo config/docs rather than guessed?
 - Are all implementation files mentioned by steps in scope?
 - Are out-of-scope boundaries and STOP conditions specific to this plan?
+- For cross-boundary work, does the plan explain why target-layer names/shapes fit existing target-layer conventions instead of merely mirroring source-layer internals?
 - Are done criteria machine-checkable?
 - For UI work, are state, dependencies, feedback, existing-data compatibility, copy/i18n, accessibility basics, and smoke checks explicit?
 - Are secret values omitted?

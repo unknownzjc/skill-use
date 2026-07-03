@@ -62,6 +62,10 @@ Important constraints:
 - <API compatibility, data compatibility, product, design, security, or migration constraint.>
 - <Any assumption the executor must preserve.>
 
+Decision notes, only when a non-obvious naming/shape/boundary choice affects execution:
+
+- <decision>: choose <default> because <repo docs/code/tests/callers or convention>; confidence <high/medium/low>; revisit if <condition>.
+
 ## Commands you will need
 
 | Purpose | Command | Expected on success |
@@ -234,6 +238,7 @@ Stop and report instead of continuing if:
 - A required command, dependency, service, or test fixture is missing.
 - A key assumption in this plan turns out false: `<name assumption>`.
 - The fix requires changing public API, data shape, migrations, auth/security posture, or user-visible behavior not explicitly listed as in scope.
+- A cross-boundary decision in the plan turns out to mirror source-layer internals in a way that conflicts with target-layer conventions.
 - The change appears to expose or require handling secrets, credentials, or sensitive data not described in this plan.
 
 ## Maintenance notes
@@ -284,6 +289,7 @@ Before finishing a plan, verify:
 - Scope and out-of-scope sections are specific.
 - UI-facing plans include a UI Interaction Contract, or explicitly explain why the UI change is trivial.
 - UI-facing plans make data/state, dependency behavior, feedback states, copy/i18n, accessibility basics, existing-data compatibility, and manual smoke checks explicit.
+- Cross-boundary plans record evidence for target-layer naming/shape choices instead of blindly copying source-layer internals.
 - STOP conditions are relevant to this plan, not generic boilerplate only.
 - Done criteria are machine-checkable.
 - Could a weaker executor follow the plan without making product or architecture decisions.
