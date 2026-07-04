@@ -96,11 +96,44 @@ Before delivering, fix high-signal gaps only:
 
 Do not inflate the plan with boilerplate just to satisfy the checklist.
 
-## 6. Deliver and stop
+## 6. Deliver, optionally ask, and optionally dispatch
 
-Present the written or updated plan path and a concise summary. Stop after planning.
+Present the written or updated plan path(s) and a concise summary.
 
-Do not implement until the user gives a separate explicit execution request after reviewing the plan.
+Use the post-plan `ask_user` decision gate only when all of these are true:
+
+- Planning mode actually wrote or updated one or more executable plan artifacts.
+- The session is interactive enough to use `ask_user`.
+- The user did not explicitly request `plan only`, `just write the plan`, `do not execute`, `no follow-up question`, or equivalent.
+
+If any condition is false, stop after presenting the plan summary. Include the manual command the user can run later:
+
+- Single plan: `pi "/skill:improve execute <plan-path>"`
+- Backlog/multiple plans with an index: `pi "/skill:improve execute"` so execute mode selects the next executable plan from the index.
+
+Before presenting a herdr dispatch option, check whether this pane is inside herdr:
+
+```bash
+test "${HERDR_ENV:-}" = "1"
+```
+
+If inside herdr, call `ask_user` with exactly one focused decision:
+
+- `Execute in new herdr tab` — dispatch a separate herdr-managed pi session. For a single plan, dispatch `/skill:improve execute <plan-path>`. For backlog/multiple plans with an index, dispatch `/skill:improve execute` without a plan argument so execute mode selects the next executable plan from the index.
+- `Keep plan only` — stop after planning.
+- `Revise plan` — wait for the user's revision instructions or ask for the single most important revision detail if they did not provide one.
+
+If not inside herdr, do not offer `Execute in new herdr tab`. Instead call `ask_user` with options such as:
+
+- `Keep plan only` — stop after planning.
+- `Show manual execute command` — print the appropriate `pi "/skill:improve execute..."` command and stop.
+- `Revise plan` — wait for the user's revision instructions or ask for the single most important revision detail if they did not provide one.
+
+If the user chooses `Execute in new herdr tab`, do not implement in the current pane. Read and follow `references/post-plan-dispatch.md`.
+
+If the user chooses `Keep plan only` or `Show manual execute command`, stop after responding.
+
+If the user chooses `Revise plan`, revise only plan artifacts unless the user later makes an explicit execution request.
 
 ## Backlogs
 
