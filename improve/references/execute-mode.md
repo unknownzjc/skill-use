@@ -34,7 +34,7 @@ Before editing any implementation file:
    - If they overlap any in-scope file, stop and ask whether to continue, because direct current-branch execution could overwrite user work.
    - If they are unrelated, record them in the final report and avoid touching them.
 5. Run the plan's current-state/drift check by re-opening the cited current-state files and comparing them to the plan.
-6. For cross-boundary plans, sanity-check that source-layer names/shapes are not being copied into the target layer without evidence. If the plan conflicts with clear target-layer conventions or leaves a high-impact contract choice unresolved, stop and report the mismatch instead of redesigning it during execution.
+6. Sanity-check that the plan's key assumptions still match clear repo conventions and current code. If the plan conflicts with those conventions or leaves a high-impact design, public contract, or external contract choice unresolved, stop and report the mismatch instead of redesigning it during execution.
 7. If the current state no longer matches the plan, stop before editing source and either refresh the plan or ask the user whether to reconcile.
 8. Mark the selected plan `IN PROGRESS` in the index if an index exists. If there is no index, do not create one solely for execution unless the user asks.
 

@@ -36,15 +36,15 @@ Record the facts the executor needs:
 - Current-state file paths and line references.
 - Compatibility, product, security, migration, or data constraints.
 
-For cross-boundary work (for example backend-to-public API, adapter-to-facade, database-to-API, SDK-to-product, service-to-UI/CLI), inspect the **target layer's** adjacent patterns before choosing names, paths, shapes, or terminology. Do not copy source-layer implementation names by default; map them to the target layer's existing taxonomy and record the evidence for the chosen default.
+When a change exposes or translates behavior through a different surface or representation — for example backend-to-public API, adapter-to-facade, database-to-API, SDK-to-product, or service-to-UI/CLI — inspect that surface's adjacent patterns before choosing names, paths, shapes, or terminology. Prefer the affected surface's conventions over local implementation wording, and record evidence for non-obvious choices.
 
 For UI-facing work, read `references/ui-interaction-contract.md` and inspect nearby UI, design-system components, i18n, loading/error/empty states, validation/save/cancel patterns, and state-management conventions.
 
 ## 3. Resolve ambiguity
 
-Resolve ambiguity from evidence before asking: repo docs/design notes, target-layer neighboring code, tests, generated specs, existing callers, then common industry conventions. Choose the least surprising repo-consistent default and document the evidence.
+Resolve ambiguity from evidence before asking: repo docs/design notes, neighboring code in the affected area, tests, generated specs, existing callers, then common industry conventions. Choose the least surprising repo-consistent default and document the evidence.
 
-Ask only when a decision remains material and high risk after recon, such as data loss, security/sensitive-data handling, irreversible behavior, saved-data shape, external/public contract semantics, product terminology that changes meaning, or a boundary choice that changes long-term architecture.
+Ask only when a decision remains material and high risk after recon, such as data loss, security/sensitive-data handling, irreversible behavior, saved-data shape, external or public contract semantics, product terminology that changes meaning, or a boundary choice that changes long-term architecture.
 
 For low-risk ambiguity, choose the repo-consistent default and document it as an assumption, decision note, or STOP condition.
 
@@ -89,7 +89,7 @@ Before delivering, fix high-signal gaps only:
 - Are commands verified from repo config/docs rather than guessed?
 - Are all implementation files mentioned by steps in scope?
 - Are out-of-scope boundaries and STOP conditions specific to this plan?
-- For cross-boundary work, does the plan explain why target-layer names/shapes fit existing target-layer conventions instead of merely mirroring source-layer internals?
+- For non-obvious naming, shape, or boundary choices, does the plan cite repo evidence instead of relying on implementation wording alone?
 - Are done criteria machine-checkable?
 - For UI work, are state, dependencies, feedback, existing-data compatibility, copy/i18n, accessibility basics, and smoke checks explicit?
 - Are secret values omitted?
