@@ -16,13 +16,23 @@ Before dispatch:
 
 ## Detect the planning CLI
 
-Run:
+Use Herdr's detected agent metadata first:
+
+```bash
+herdr agent get "$HERDR_PANE_ID"
+```
+
+Parse `.result.agent.agent` and accept it only when it is exactly `omp`, `codex`, or `pi`.
+
+If metadata is absent or unsupported, inspect the foreground process as a fallback:
 
 ```bash
 herdr pane process-info --current
 ```
 
-Parse the JSON result and inspect the current pane's foreground process `argv[0]` and process name. Match the executable basename against this adapter table:
+Inspect every foreground process's name and full `argv`, not only `argv[0]`. A script-installed CLI may appear behind `node`, `bun`, or a shell wrapper. Accept only an explicit CLI basename or a CLI-specific entrypoint path that unambiguously identifies `omp`, `codex`, or `pi`; never infer a CLI from a generic interpreter process.
+
+If metadata and process evidence identify different supported CLIs, or the fallback yields multiple candidates, stop and ask one focused question listing the candidates.
 
 | Detected planning CLI | Execution CLI | Interactive invocation |
 |---|---|---|
@@ -36,7 +46,7 @@ Rules:
 - Use the base interactive command with one initial prompt. Do not use `omp --print`, `codex exec`, or `pi --print`; Herdr should own an interactive agent pane.
 - Resolve the selected executable with `command -v`. Stop if that executable is unavailable in the dispatch environment.
 - Do not copy arbitrary process arguments from the planning session. They may contain session selectors, prompts, or unsafe flags.
-- Do not execute an unrecognized process name. If no supported CLI is detected, or more than one supported foreground CLI is plausible, ask one focused question listing the detected candidates. Never silently fall back to `pi`.
+- Do not execute an unrecognized process name or entrypoint. If neither detection source identifies one supported CLI, ask one focused question. Never silently fall back to `pi`.
 
 ## Start the execution agent
 

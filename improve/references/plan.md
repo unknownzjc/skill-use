@@ -22,7 +22,6 @@ Read only what is needed to make the plan specific:
 - Relevant source, adjacent tests, and the closest existing examples.
 - Intent documents such as ADRs, design docs, product specs, or migration notes when they constrain the change.
 - Existing plan artifacts only far enough to avoid overwrites, duplicated objectives, or broken dependencies.
-- For UI-facing work, read `references/ui-interaction-contract.md` and inspect nearby design-system components, i18n, loading/error/empty states, validation/save/cancel patterns, and state-management conventions.
 
 Record:
 
@@ -58,7 +57,7 @@ For a new plan, use the compact shape below and include optional sections only w
 
 Read and run `plan-audit.md` as a separate mandatory gate for every new, updated, or reviewed plan. Do not restate its checklist here.
 
-Record the required per-step verdicts and evidence-backed notes in an authored or updated plan's **Audit evidence** section. For critique-only review, include them in the report. For a multi-plan set, record Part C results in the index and reconcile every index decision back into the affected plan bodies.
+Patch every mismatch when editing the artifact. For critique-only review, report concrete blockers. Record only executor-relevant assumptions or deferred decisions in the plan's normal context, contract, or stop sections.
 
 ### 6. Deliver and stop
 
@@ -87,7 +86,7 @@ Use the smallest coherent plan set. The index should contain:
 - Dependency topology, ownership, and construction order for new long-lived components when applicable.
 - Deferred or intentionally missing capabilities and which consumers must not assume them.
 - Rejected findings or approaches when recording them prevents repeated work.
-- The evidence required by `plan-audit.md` Part C.
+- Affected dependency and contract closure checks required by `plan-audit.md`.
 
 Minimal status table:
 
@@ -123,6 +122,10 @@ Minimal status table:
 ## Contracts and risks
 
 <Include only when relevant. Name produced/consumed contract shapes and verification. For stateful, concurrent, or effectful work, state ownership, topology, transitions, completion/error/cancellation/cleanup propagation, and the guard or check for each material risk.>
+
+## UI interaction contract (when applicable)
+
+<Follow `references/ui.md`; record entry, state, inputs, feedback, compatibility, and UX verification decisions.>
 
 ## Scope
 
@@ -172,10 +175,4 @@ Verify:
 
 <Omit when no non-obvious decision needs preservation. Keep reasoning here, never in executable steps.>
 
-## Audit evidence
-
-- Step verdicts: `<Step 1: clean; Step 2: moved ... to rationale; ...>`
-- Objects checked: `<identifiers, contracts, commands, dependency edges, states, or call chains>`.
-- Mismatches fixed: `<none or concrete fixes>`.
-- Remaining assumptions or deferred decisions: `<none or explicit items>`.
 ```

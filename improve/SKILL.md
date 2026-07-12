@@ -5,7 +5,7 @@ description: >-
 license: MIT
 metadata:
   author: adapted
-  version: "2.1.0"
+  version: "2.2.0"
 ---
 
 # Improve
@@ -21,6 +21,8 @@ Choose one action:
 - **Plan** — create an implementation plan, specification, backlog, finding-based plan, or standalone execution prompt. Read `references/plan.md`.
 - **Review** — critique or update an existing plan. Read `references/plan.md` and run its required audit.
 - **Execute** — execute one existing improve plan on the current branch. Read `references/execute.md` before touching implementation files.
+
+Additional reference: for user-facing UI or interaction changes, also read `references/ui.md`.
 
 Finding input and backlog output are planning variants, not modes. An execution prompt is the complete plan wrapped in instructions to obey its scope, verification gates, and stop conditions.
 
