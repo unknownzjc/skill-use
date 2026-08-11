@@ -1,0 +1,134 @@
+name: herdr-orca
+version: 1
+
+routes:
+  review-existing:
+    jobs: [review, summary]
+  implement-and-review:
+    jobs: [implement, review, summary, finalize]
+
+defaults:
+  timeout: 1200000
+  max-review-rounds: 2
+
+jobs:
+  implement:
+    agent:
+      name-prefix: impl
+      kind: codex
+      model: gpt-5.6-sol
+      args:
+        - --sandbox
+        - danger-full-access
+        - --ask-for-approval
+        - never
+        - -c
+        - 'model_reasoning_effort="high"'
+    prompts:
+      run: |
+        Implement the request below in {{TARGET_CWD}} against base {{TARGET_BASE}}. Follow repository instructions, keep the change narrowly scoped, and run relevant tests. Do not commit, merge, rebase, or push; the Lead will request finalization after the review gate passes.
+
+        <user_request>
+        {{USER_REQUEST}}
+        </user_request>
+      fix: |
+        Fix the validated P1/P2 findings below in {{TARGET_CWD}} without broadening scope, then rerun relevant tests.
+
+        <findings>
+        {{FINDINGS}}
+        </findings>
+
+  review:
+    strategy:
+      max-parallel: 2
+      single-reviewer:
+        when:
+          max-files: 5
+          max-changed-lines: 300
+          risk-match: whole-token-in-request-paths-or-added-lines
+          excludes-risk-terms:
+            - authentication
+            - authorization
+            - permission
+            - payment
+            - migration
+            - schema
+            - concurrency
+            - cryptography
+            - secret
+            - public-api
+            - deployment
+      recheck:
+        select: finding-owners
+        reuse-sessions: true
+        full-review-when:
+          - fix-expands-files-or-risk
+          - finding-owner-missing
+      matrix:
+        include:
+          - name-prefix: review-a
+            agent:
+              kind: pi
+              model: zai-coding-cn/glm-5.2
+              args: [--exclude-tools, 'edit,write', --thinking, max]
+          - name-prefix: review-b
+            agent:
+              kind: pi
+              model: deepseek/deepseek-v4-flash
+              args: [--exclude-tools, 'edit,write', --thinking, max]
+    prompt: |
+      /skill:code-review Review the current working-tree changes in {{TARGET_CWD}} against {{TARGET_BASE}}, using {{STATUS_ARTIFACT}} and {{DIFF_ARTIFACT}} as the authoritative evidence for staged, unstaged, and untracked changes. If validated findings are provided below, recheck only those findings and regressions caused by their fixes; otherwise review the full target diff. Use the user request below as the complete spec and do not ask for an issue tracker. Do not modify files or Git state. Return PASS when the applicable scope is clean; otherwise return only actionable P1/P2 findings with file:line, evidence, impact, and required fix.
+
+      <findings>
+      {{FINDINGS}}
+      </findings>
+
+      <user_request>
+      {{USER_REQUEST}}
+      </user_request>
+
+      <test_results>
+      {{TEST_RESULTS}}
+      </test_results>
+
+  summary:
+    needs: review
+    if: review.selected-count == 2
+    agent:
+      name-prefix: summary
+      kind: codex
+      model: gpt-5.6-luna
+      args:
+        - --sandbox
+        - danger-full-access
+        - --ask-for-approval
+        - never
+        - --disable
+        - multi_agent
+        - -c
+        - 'model_reasoning_effort="max"'
+    prompt: |
+      Verify the source-labeled reviewer reports below against {{TARGET_CWD}} and {{TARGET_BASE}}. Deduplicate them, discard unsupported, style-only, and P3 findings, and return PASS or only validated P1/P2 findings with file:line, required fix, and owners listing every source reviewer that raised the finding. Do not modify anything. Do not spawn agents, run tests, or perform broad repository exploration; inspect only cited files and lines when reports conflict.
+
+      <user_request>
+      {{USER_REQUEST}}
+      </user_request>
+
+      <review_reports>
+      {{REVIEW_REPORTS}}
+      </review_reports>
+
+  finalize:
+    needs: review
+    if: gate.result == PASS
+    reuse-agent: implement
+    prompt: |
+      The review gate passed. In {{TARGET_CWD}}, do not edit files or rerun implementation. Stage only the intended changes for the request below and create one commit with a concise message. If the intended changes are already committed and the worktree is clean, return the existing HEAD instead of amending or creating an empty commit. Do not merge, rebase, or push. Return the commit SHA and final Git status.
+
+      <user_request>
+      {{USER_REQUEST}}
+      </user_request>
+    cleanup:
+      worktree: remove
+      branch: keep
+      remote: unchanged

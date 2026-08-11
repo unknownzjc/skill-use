@@ -1,0 +1,6 @@
+interface:
+  display_name: "Herdr Review Gate"
+  short_description: "Run configurable worktree and review agent prompts"
+  default_prompt: "Use $herdr-orca to review my current changes with the configured YAML workflow and agent models."
+policy:
+  allow_implicit_invocation: false
