@@ -56,23 +56,43 @@ name. Keep names within Herdr's supported length and syntax.
 
 The Goal Package contains a Peer Runtime with:
 
-- the configured Peer Agent kind,
-- the configured Peer Agent model,
+- the ordered Peer Agent candidates and their native arguments,
+- the applicable fallback policy,
 - the absolute path to the Peer Agent role.
 
 Use those supplied values rather than choosing or rediscovering a model. Start
-each Peer in a separate Herdr pane and load its role at process startup:
+each Peer in a separate Herdr pane and load its role at process startup. The
+generic command shape is:
 
 ```bash
 herdr agent start <peer-name> --kind <peer-kind> --pane <pane-id> -- \
-  --model <peer-model> \
+  [--model <peer-model>] \
+  <peer-native-args...> \
   --append-system-prompt <absolute-peer-role-path>
 ```
 
 Follow the available `herdr` skill for pane creation, state handling, and
 safety. Prepare the complete assignment before creating the pane, then start
-and prompt the Peer immediately. If startup or prompting fails, close the pane
-you created.
+and prompt the Peer immediately. Pass native arguments separately without
+`eval`, omit `--model` when absent, and use the runtime's supported equivalent
+when it loads a system prompt differently.
+
+If a configured fallback condition occurs, capture the evidence and persisted
+changes, close the failed Peer pane, and try the next eligible candidate with
+the same assignment and Write Scope. Never run both candidates for the same
+assignment at once. Do not switch models for a semantic terminal marker,
+approval or user-input block, test failure, or context-expansion request.
+
+When the failure is ambiguous, inspect it once with Herdr before deciding. A
+wait timeout with visible material progress means continue waiting, not
+fallback. Use only the configured recovery prompts for missing terminal
+markers. Quarantine a candidate for the run only for a configured quarantine
+condition.
+
+If every candidate fails, record `PEER_RUNTIME_EXHAUSTED` with concise evidence
+for each candidate. Continue the goal yourself or choose a materially different
+approach; do not terminate the entire Goal merely because an optional Peer was
+unavailable.
 
 Peer Agents are best used for focused assignments such as:
 

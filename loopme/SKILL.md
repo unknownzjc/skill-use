@@ -27,54 +27,48 @@ test "${HERDR_ENV:-}" = 1
 If that check fails, report that LoopMe requires a Herdr-managed pane and stop.
 Use the installed `herdr` CLI help as the authority for current syntax.
 
-## Agent Configuration
+## Runtime Configuration
 
-Use the following agents for the inner loop:
+Before opening a pane, load [config.yaml](config.yaml). It is the source of
+truth for role paths, ordered Goal and Peer runtime candidates, fallback
+policy, and loop limits. Resolve relative role paths from the LoopMe skill
+directory.
 
-```yaml
-goal_agent:
-  kind: pi
-  model: kimi-coding/k3
+Validate the loaded configuration before dispatch:
 
-peer_agent:
-  kind: pi
-  model: glm-5.3
-```
+- `version` is supported,
+- both roles resolve to readable files,
+- each Agent has at least one candidate with a `kind`,
+- `args` is an array and `model`, when present, is a string,
+- configured limits are positive integers,
+- `recovery_prompts` is a non-negative integer,
+- the fallback strategy and trigger names are understood.
 
-`kind` identifies the agent/runtime supported by Herdr.
-
-`model` identifies the model used by that agent. For the configured `pi`
-runtime, pass it after Herdr's `--` separator as `--model <model>`.
-
-Do not hard-code model behavior into the role definitions. Model assignment
-belongs here.
+Report a configuration error before creating any pane rather than guessing a
+model or silently repairing the file. Do not probe model catalogs up front;
+the ordered candidates are the configured choices.
 
 ## Roles
 
-Before starting a Goal Agent, read
-[references/goal-agent.md](references/goal-agent.md) and resolve its absolute
-path. Load it into the new process with Pi's `--append-system-prompt` option;
-reading the role in the Outer Loop is not a substitute for giving it to the
-Goal Agent.
+Before starting a Goal Agent, read the configured Goal role and resolve its
+absolute path. Load it into the new process with the candidate runtime's native
+system-prompt argument. Reading the role in the Outer Loop is not a substitute
+for giving it to the Goal Agent.
 
-Before delegating peer creation, read
-[references/peer-agent.md](references/peer-agent.md) and resolve its absolute
-path. Give that path and the configured `peer_agent` values to the Goal Agent
-in the Peer Runtime portion of its Goal Package.
+Before delegating peer creation, read the configured Peer role and resolve its
+absolute path. Give that path, the ordered Peer candidates, and the applicable
+fallback policy to the Goal Agent in the Peer Runtime portion of its Goal
+Package.
 
-The role reference defines behavior. The Agent Configuration defines which
-model performs that role.
+Role references define behavior. `config.yaml` defines which runtimes perform
+the roles.
 
 ## Loop Limits
 
-Use these limits unless the user explicitly provides different ones:
-
-```yaml
-max_goal_attempts: 2
-max_review_rounds: 3
-```
-
-`max_goal_attempts` includes the initial Goal Agent and any replacement.
+Use the limits loaded from `config.yaml` unless the user explicitly provides
+different ones. `max_goal_attempts` includes the initial operational Goal Agent
+and any replacement. A candidate that fails before accepting the Goal Package
+does not consume a Goal attempt.
 
 A review round begins only when a Goal Agent reports
 `READY_FOR_OUTER_REVIEW`. A pre-review stall, blocked state, startup failure,
@@ -91,8 +85,8 @@ round.
 - The Outer Loop must not directly control a Peer while its Goal Agent is
   available. It may close an orphaned Peer pane only as terminal cleanup.
 - Every pane created by LoopMe has a cleanup owner. Keep its agent name, pane
-  ID, role, owner, attempt, state, and write scope in memory; do not create a
-  state file.
+  ID, role, owner, candidate, attempt, state, and write scope in memory; do not
+  create a state file.
 - The Outer Loop creates a short unique Run Identity before delegation. Every
   Goal and Peer name in the run must use that prefix, so orphaned Agents remain
   discoverable without persistent orchestration state.
@@ -108,14 +102,19 @@ Default to a sibling pane in the current tab and the requested repository or
 working directory. Preserve the user's focus. Parse pane and agent identifiers
 from Herdr's JSON responses rather than predicting them.
 
-For the configured Goal Agent, the startup shape is:
+For each configured candidate, the startup shape is:
 
 ```bash
 herdr pane split --current --direction right --cwd <working-directory> --no-focus
-herdr agent start <goal-name> --kind pi --pane <pane-id> -- \
-  --model kimi-coding/k3 \
+herdr agent start <goal-name> --kind <candidate-kind> --pane <pane-id> -- \
+  [--model <candidate-model>] \
+  <candidate-args...> \
   --append-system-prompt <absolute-goal-role-path>
 ```
+
+Pass native arguments as separate arguments without `eval`. Omit `--model`
+when the candidate has no model. If a configured runtime uses a different
+native option for loading the role, use that runtime's supported equivalent.
 
 Choose the split direction from the current layout as directed by the `herdr`
 skill. Prepare the complete Goal Package before creating the pane. After the
@@ -138,13 +137,62 @@ Herdr lifecycle state is not semantic completion. Classify the response by its
 role marker. For a Goal Agent, the expected markers are
 `READY_FOR_OUTER_REVIEW`, `GOAL_BLOCKED`, and `GOAL_STALLED`.
 
-If a Goal Agent settles without a marker, send one recovery prompt asking it
-to continue or return the correct marker. If it settles again without a
-marker, classify the attempt as `GOAL_STALLED`; do not keep prompting it.
+If a Goal Agent settles without a marker, use the configured number of recovery
+prompts to ask it to continue or return the correct marker. Exhausting recovery
+prompts is a candidate failure only when
+`missing_terminal_marker_after_recovery` is configured as a fallback trigger.
 
 If the agent is `blocked`, inspect the UI and preserve approval and authority
 boundaries before sending input. If alternate-screen history truncates the
 handoff, use the `herdr` skill's file-output fallback.
+
+## Runtime Fallback
+
+Fallback handles an unusable Agent runtime; it is not another implementation
+or review loop.
+
+Select candidates in configured order. For Goal replacements, prefer a
+candidate not yet used in the run when configured. When
+`try_each_peer_candidate_once_per_assignment` is enabled, try each eligible
+Peer candidate at most once for that assignment. Healthy Peer candidates may
+be used again for later, distinct assignments. Do not start candidates merely
+to test them.
+
+Switch candidates only for a configured `switch_on` condition supported by
+observable evidence. When the command does not already explain the failure,
+inspect the Agent once with `agent get` and `agent read`. A wait timeout alone
+is not proof of failure: if the read shows material work still progressing,
+resume event-driven waiting instead of replacing the Agent.
+
+Before switching:
+
+1. capture the failure evidence and any persisted work,
+2. classify whether the candidate must be quarantined for the rest of the run,
+3. retire the owned Agent and pane,
+4. start the next eligible candidate with the same role and assignment plus
+   only the recovery context needed to continue.
+
+Never keep the failed and replacement Agent active together. Preserve partial
+changes; do not reset or delete them as cleanup. A Goal replacement receives
+the current repository state and the prior attempt's concise handoff. A Peer
+replacement receives the same assignment and any captured context delta, and
+retains the same Write Scope.
+
+A Goal candidate that fails before accepting the Goal Package does not consume
+a Goal attempt. Once a Goal candidate has accepted the package and begun work,
+replacing it consumes the next Goal attempt and remains bounded by
+`max_goal_attempts`; fallback must not reset or bypass that counter.
+
+Conditions listed under `do_not_switch_on` keep their normal semantic handling.
+In particular, an approval or user-input block must be surfaced, a semantic
+terminal marker must be honored, test failures remain implementation work, and
+an Outer REJECT returns to the active Goal Agent.
+
+If all Goal candidates are unavailable, report `GOAL_RUNTIME_EXHAUSTED` with
+one concise failure record per candidate and stop automatic dispatch. If all
+Peer candidates fail, the Goal Agent records `PEER_RUNTIME_EXHAUSTED` and
+continues the owned goal itself or chooses another materially different
+approach; Peer failure alone does not terminate the Goal.
 
 ## Outer Loop
 
@@ -190,10 +238,10 @@ When starting the Goal Agent, provide a concise package containing:
 - Verification Expectations
 - Repository or working directory
 - Peer Runtime:
-  - the configured `peer_agent` kind and model,
-  - the absolute path to `references/peer-agent.md`,
-  - the instruction to load that role with `--append-system-prompt` when
-    starting a Peer Agent.
+  - the configured ordered Peer candidates, including native args,
+  - the applicable fallback policy,
+  - the absolute path to the configured Peer role,
+  - the instruction for loading that role when starting a Peer Agent.
 
 Include only information that changes execution decisions. Preserve the
 user's original intent.
@@ -205,7 +253,7 @@ the contract. Do not expand the contract during review.
 
 ## Inner Loop
 
-Start the Goal Agent using the configured `goal_agent`.
+Start the Goal Agent using the next eligible configured Goal candidate.
 
 The Goal Agent owns execution of the task. It may:
 
@@ -242,7 +290,8 @@ A Peer Agent receives a focused assignment from the Goal Agent. Examples:
 
 Peers do not own the overall goal.
 
-Start Peer Agents using the configured `peer_agent`.
+Start Peer Agents using the configured ordered Peer candidates and fallback
+policy.
 
 Prefer focused assignments over delegating the entire goal.
 
@@ -342,6 +391,9 @@ STARTING -> WORKING -> READY -> REVIEWING -> PASS
                 |
                 +-> GOAL_BLOCKED
                 +-> GOAL_STALLED
+
+STARTING or WORKING -- configured runtime failure --> FALLBACK -> STARTING
+FALLBACK -- no eligible candidate --> GOAL_RUNTIME_EXHAUSTED
 ```
 
 On `GOAL_STALLED`, inspect its evidence once. Resume the same Goal Agent only
@@ -350,12 +402,12 @@ and start one replacement if `max_goal_attempts` permits. If the attempt limit
 is exhausted, report `GOAL_ATTEMPT_LIMIT_REACHED` instead of starting another
 Agent.
 
-On PASS, blocked termination, attempt-limit exhaustion, or review-limit
-exhaustion, capture the final evidence and close the Goal pane. If the Goal
-Agent became unavailable before cleaning its Peers, the Outer Loop may perform
-one Agent-list query and close only orphaned panes whose names use this run's
-unique prefix. Use each recorded pane ID and the installed Herdr CLI syntax;
-do not infer pane IDs or close unrelated panes.
+On PASS, blocked termination, runtime exhaustion, attempt-limit exhaustion, or
+review-limit exhaustion, capture the final evidence and close the Goal pane.
+If the Goal Agent became unavailable before cleaning its Peers, the Outer Loop
+may perform one Agent-list query and close only orphaned panes whose names use
+this run's unique prefix. Use each recorded pane ID and the installed Herdr CLI
+syntax; do not infer pane IDs or close unrelated panes.
 
 ## Principles
 
