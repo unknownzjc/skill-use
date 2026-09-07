@@ -67,7 +67,8 @@ the roles.
 
 Use the limits loaded from `config.yaml` unless the user explicitly provides
 different ones. `max_goal_attempts` includes the initial operational Goal Agent
-and any replacement. A candidate that fails before accepting the Goal Package
+and any replacement. Switching models within the same session does not create
+a new Goal attempt. A candidate that fails before accepting the Goal Package
 does not consume a Goal attempt.
 
 A review round begins only when a Goal Agent reports
@@ -102,7 +103,7 @@ Default to a sibling pane in the current tab and the requested repository or
 working directory. Preserve the user's focus. Parse pane and agent identifiers
 from Herdr's JSON responses rather than predicting them.
 
-For each configured candidate, the startup shape is:
+For initial startup or a replacement that cannot reuse the session, the shape is:
 
 ```bash
 herdr pane split --current --direction right --cwd <working-directory> --no-focus
@@ -115,6 +116,14 @@ herdr agent start <goal-name> --kind <candidate-kind> --pane <pane-id> -- \
 Pass native arguments as separate arguments without `eval`. Omit `--model`
 when the candidate has no model. If a configured runtime uses a different
 native option for loading the role, use that runtime's supported equivalent.
+
+The configured runtime is OMP (`kind: omp`). Herdr launches `omp` with the
+native arguments after `--`; use its interactive mode, not `--print` or RPC
+mode. OMP accepts `--model <provider/model>`, `--thinking <level>` (including
+`max`), and `--append-system-prompt <absolute-file-path>`, which loads the
+role file's contents. Keep session persistence enabled for fallback recovery.
+For recovery after process exit, use `--resume <exact-session-id-or-path>`
+rather than `--continue`, which selects the previous session implicitly.
 
 Choose the split direction from the current layout as directed by the `herdr`
 skill. Prepare the complete Goal Package before creating the pane. After the
@@ -151,7 +160,7 @@ handoff, use the `herdr` skill's file-output fallback.
 Fallback handles an unusable Agent runtime; it is not another implementation
 or review loop.
 
-Select candidates in configured order. For Goal replacements, prefer a
+Select candidates in configured order. For Goal fallback, prefer a
 candidate not yet used in the run when configured. When
 `try_each_peer_candidate_once_per_assignment` is enabled, try each eligible
 Peer candidate at most once for that assignment. Healthy Peer candidates may
@@ -162,26 +171,59 @@ Switch candidates only for a configured `switch_on` condition supported by
 observable evidence. When the command does not already explain the failure,
 inspect the Agent once with `agent get` and `agent read`. A wait timeout alone
 is not proof of failure: if the read shows material work still progressing,
-resume event-driven waiting instead of replacing the Agent.
+resume event-driven waiting instead of switching candidates.
+
+Fallback preserves the existing conversation by default. For both Goal and
+Peer Agents, change the model in the original session rather than creating a
+new Agent and resending handoff context.
 
 Before switching:
 
 1. capture the failure evidence and any persisted work,
 2. classify whether the candidate must be quarantined for the rest of the run,
-3. retire the owned Agent and pane,
-4. start the next eligible candidate with the same role and assignment plus
-   only the recovery context needed to continue.
+3. let any active turn or tool operation settle, or safely interrupt it using
+   the runtime's supported controls; never bypass an approval boundary,
+4. use the runtime's native in-session controls to select the next eligible
+   candidate's model and apply its supported mutable settings, including
+   thinking level when configured,
+5. verify the selected model and settings through the runtime UI or status,
+   then continue the existing assignment in that same conversation.
 
-Never keep the failed and replacement Agent active together. Preserve partial
-changes; do not reset or delete them as cleanup. A Goal replacement receives
-the current repository state and the prior attempt's concise handoff. A Peer
-replacement receives the same assignment and any captured context delta, and
-retains the same Write Scope.
+Discover the supported controls from the installed runtime's help or UI; do
+not guess a Herdr model-switch command or treat startup arguments as chat
+instructions. A model-selection UI action may not cause a working lifecycle
+transition, so verify its result before starting the normal work wait.
+
+Keep the Agent name, pane, role, conversation history, assignment, Write Scope,
+and owned Peers intact. Update the active candidate in memory without resetting
+candidate eligibility, quarantine, recovery, attempt, or review counters. Do
+not resend the Goal Package, Peer assignment, or a handoff summary when that
+context is already in the session. If needed, send only a short continuation
+prompt. After an ambiguous prompt-delivery failure, first check whether the
+original assignment was accepted; deliver it only if it is absent.
+
+If the process exited, prefer the runtime's supported resume mechanism for the
+exact existing session with the next candidate. Never assume that reusing a
+pane or working directory restores a conversation; verify session identity
+and history before continuing. A process restart that resumes the same session
+does not create a new Goal attempt.
+
+Only replace the Agent when no session exists yet, the session cannot be
+resumed, or the next candidate requires an incompatible runtime or startup-only
+settings. Capture that reason, retire the prior owned Agent and pane, and start
+the next candidate with the same role and assignment plus only the recovery
+context needed to continue. Never keep the failed and replacement Agent active
+together. Preserve partial changes; do not reset or delete them as cleanup.
+A new Goal session receives the current repository state and a concise handoff;
+a new Peer session receives its assignment and captured context delta with the
+same Write Scope.
 
 A Goal candidate that fails before accepting the Goal Package does not consume
-a Goal attempt. Once a Goal candidate has accepted the package and begun work,
-replacing it consumes the next Goal attempt and remains bounded by
-`max_goal_attempts`; fallback must not reset or bypass that counter.
+a Goal attempt. Replacing a session that accepted the package and began work
+consumes the next Goal attempt and remains bounded by `max_goal_attempts`.
+In-session fallback is bounded by candidate eligibility and quarantine, not by
+creating artificial Goal attempts. Report `GOAL_ATTEMPT_LIMIT_REACHED` instead
+of creating a replacement beyond the limit.
 
 Conditions listed under `do_not_switch_on` keep their normal semantic handling.
 In particular, an approval or user-input block must be surfaced, a semantic
@@ -239,7 +281,7 @@ When starting the Goal Agent, provide a concise package containing:
 - Repository or working directory
 - Peer Runtime:
   - the configured ordered Peer candidates, including native args,
-  - the applicable fallback policy,
+  - the applicable fallback policy, including same-session model switching,
   - the absolute path to the configured Peer role,
   - the instruction for loading that role when starting a Peer Agent.
 
@@ -392,7 +434,9 @@ STARTING -> WORKING -> READY -> REVIEWING -> PASS
                 +-> GOAL_BLOCKED
                 +-> GOAL_STALLED
 
-STARTING or WORKING -- configured runtime failure --> FALLBACK -> STARTING
+STARTING or WORKING -- configured runtime failure --> FALLBACK
+FALLBACK -- switch model or resume existing session --> WORKING
+FALLBACK -- session unavailable or incompatible --> STARTING (replacement)
 FALLBACK -- no eligible candidate --> GOAL_RUNTIME_EXHAUSTED
 ```
 

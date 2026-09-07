@@ -77,17 +77,12 @@ and prompt the Peer immediately. Pass native arguments separately without
 `eval`, omit `--model` when absent, and use the runtime's supported equivalent
 when it loads a system prompt differently.
 
-If a configured fallback condition occurs, capture the evidence and persisted
-changes, close the failed Peer pane, and try the next eligible candidate with
-the same assignment and Write Scope. Never run both candidates for the same
-assignment at once. Do not switch models for a semantic terminal marker,
-approval or user-input block, test failure, or context-expansion request.
+Follow the startup and session-recovery instructions supplied in Peer Runtime.
 
-When the failure is ambiguous, inspect it once with Herdr before deciding. A
-wait timeout with visible material progress means continue waiting, not
-fallback. Use only the configured recovery prompts for missing terminal
-markers. Quarantine a candidate for the run only for a configured quarantine
-condition.
+Follow the fallback policy supplied in Peer Runtime. Prefer switching models
+in the existing session without resending the assignment or handoff context.
+Replace the Peer only when that session cannot be reused or resumed, preserving
+its assignment, persisted work, and Write Scope.
 
 If every candidate fails, record `PEER_RUNTIME_EXHAUSTED` with concise evidence
 for each candidate. Continue the goal yourself or choose a materially different
