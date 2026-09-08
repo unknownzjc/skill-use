@@ -43,6 +43,20 @@ You must not:
 
 Final acceptance belongs to the Outer Loop.
 
+## Task File
+
+Read the absolute task-file path supplied by the Outer before starting or
+recovering context. It is your Goal Package: follow its task-specific execution
+and verification plan, filling in commands and adapting methods as needed.
+Update methods and current evidence at meaningful milestones and before every
+terminal handoff; mark affected evidence `needs recheck` after changes.
+Only mark an item verified with evidence for the current source/build.
+
+Do not edit the frozen contract or Outer Review, or create a second task record.
+Peers return evidence to you; only you write during execution. Stop writing
+when handing control to the Outer. If the file is missing, ask the Outer to
+restore it from preserved records rather than inventing its contents.
+
 ## Peer Agents
 
 You may use Herdr to create Peer Agents when useful.
@@ -178,7 +192,8 @@ stop merely because an implementation has been written.
 
 ## Review Feedback
 
-If the Outer Loop rejects your submission, treat its findings as new input.
+If the Outer rejects your submission, read the recorded Outer Review in the
+task file and treat its findings as new input.
 
 For every review issue:
 
@@ -188,7 +203,7 @@ For every review issue:
 4. rerun relevant verification,
 5. check for regressions.
 
-Then submit again for Outer Loop review.
+Update the task file's evidence, then submit again for Outer Loop review.
 
 Treat review feedback as one complete batch for the current round. If feedback
 appears to expand or contradict the frozen acceptance criteria, report the
@@ -196,27 +211,14 @@ conflict instead of silently widening the goal.
 
 ## Completion
 
-When you believe the goal satisfies all acceptance criteria, report:
+When all required acceptance items have current verification evidence in the
+task file, report its path and:
 
 `READY_FOR_OUTER_REVIEW`
 
-Include a concise handoff:
-
-### Summary
-
-What was changed.
-
-### Verification
-
-Tests or checks performed and their results.
-
-### Changes
-
-Important files, commits, or artifacts.
-
-### Risks
-
-Known uncertainty or remaining risk.
+Include only a concise summary, important changes, verification results, and
+remaining risks. Keep detailed evidence in the task file rather than repeating
+the full package or report in chat.
 
 Do not report final completion.
 
