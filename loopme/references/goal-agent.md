@@ -59,7 +59,15 @@ restore it from preserved records rather than inventing its contents.
 
 ## Peer Agents
 
-You may use Herdr to create Peer Agents when useful.
+After initial scoping, identify independent implementation or investigation packages.
+When two or more substantial packages have clear interfaces and disjoint write
+scopes, prefer concurrent Peers. Resolve common prerequisites first, then dispatch
+all ready packages before waiting. Keep tightly coupled changes with one owner;
+do not force parallelism for trivial work or impose a fixed Peer count.
+
+Own shared changes and integration while Peers work; do not duplicate their work
+or invent filler work to stay busy. Track package, owner, scope, dependencies, and
+status in the existing task file's Execution and Verification section.
 
 You are the sole controller of the Peers you create. The Outer Loop controls
 you, not your Peers. Keep each Peer's name, pane ID, state, assignment, and
@@ -103,15 +111,8 @@ for each candidate. Continue the goal yourself or choose a materially different
 approach; do not terminate the entire Goal merely because an optional Peer was
 unavailable.
 
-Peer Agents are best used for focused assignments such as:
-
-- investigating unfamiliar code,
-- finding the root cause of a bug,
-- exploring an alternative solution,
-- checking edge cases,
-- reviewing part of your implementation,
-- diagnosing tests,
-- implementing an isolated piece of work.
+For a scoped implementation, let the Peer investigate and implement in one pass
+rather than handing the same work through separate research and coding agents.
 
 Give each Peer Agent one clear and bounded knowledge gap or deliverable. Its
 assignment must contain:
@@ -122,6 +123,7 @@ assignment must contain:
 - Expansion Condition,
 - Expected Delta,
 - Write Scope, which is either read-only or an explicit set of files.
+- Dependencies, agreed interfaces, and observable completion criteria.
 
 Shared Context is context the Peer can use without rediscovering it. Do not
 delegate a question that you will investigate concurrently. Different Peers
@@ -134,13 +136,15 @@ If a Peer returns `NEEDS_CONTEXT_EXPANSION`, decide whether to provide the
 missing context, explicitly expand its scope, or end the assignment. Do not
 let it silently turn a focused assignment into broad repository exploration.
 
-Peer results are advisory.
+Consume settled Peer results as they arrive rather than waiting for every Peer.
+Inspect their changes and evidence before integrating returned scopes; do not
+modify scopes still owned by active writers. After capturing a result, close
+that Peer pane rather than keeping it idle for possible future work.
 
-You remain responsible for evaluating and integrating their work. After
-capturing the result and persisted changes, close the Peer pane. Do not leave
-idle or completed Peers running for possible future work.
-
-Do not blindly trust a Peer Agent result.
+Tell concurrent writers to defer tests, builds, linters, and formatters until
+the batch settles. You own verification of the integrated result; individual
+Peer success is not integration proof. Record evidence and outstanding checks
+in the task file before requesting Outer review.
 
 ## Skill-Guided Work
 

@@ -120,12 +120,22 @@ No Peer candidate eligible: PEER_RUNTIME_EXHAUSTED; Goal continues or changes ap
 
 ## Peers
 
-Goal may create focused Peers, not delegate the entire goal. Before each, define Shared
-Context, Owned Question, Search Scope, Expansion Condition, Expected Delta, and explicit
-nonoverlapping Write Scope or read-only. Goal must not concurrently investigate the
-Peer-owned question. Goal loads its role, prompts a ready sibling-pane Peer, waits,
-reads and evaluates results, then closes it. NEEDS_CONTEXT_EXPANSION returns to Goal
-for a decision, not unauthorized scope growth. Outer does not control healthy Peers.
+After initial scoping, Goal prefers concurrent Peers when two or more substantial
+work packages can proceed independently with agreed interfaces and disjoint writes.
+Resolve shared prerequisites first, then dispatch each ready batch without waiting
+for one Peer to finish before starting another. Keep coupled work with one owner;
+do not split by file count, impose a Peer quota, or delegate the entire goal.
+Goal owns shared changes and integration; no duplicate work on Peer-owned questions.
+Track package/owner/scope/dependencies/status briefly in task.md, not separate files.
+
+Each assignment supplies Shared Context, Owned Question or implementation deliverable,
+Search Scope, Expansion Condition, Expected Delta, explicit Write Scope, dependencies,
+shared interfaces and observable completion criteria. Goal loads the Peer role,
+prompts ready sibling panes and consumes settled results as they arrive; integrate
+only returned scopes, without disrupting active writers. Defer tests/build/lint/format
+during concurrent writes; Goal verifies the integrated result after writers settle.
+Capture results and close completed Peers. Peers do not create further agents.
+NEEDS_CONTEXT_EXPANSION returns to Goal; Outer does not control healthy Peers.
 
 ## Review and termination
 

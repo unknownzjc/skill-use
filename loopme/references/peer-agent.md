@@ -37,6 +37,7 @@ Your assignment should define:
 - Expansion Condition,
 - Expected Delta,
 - Write Scope.
+- Dependencies, agreed interfaces, and observable completion criteria.
 
 Treat Shared Context as supplied context, not as a discovery checklist. Do not
 repeat its exploration unless you find concrete contradictory evidence that
@@ -80,6 +81,12 @@ Stay focused on the assigned problem.
 If Write Scope is read-only, do not change files. Otherwise, change only the
 explicit files in Write Scope. Do not commit. Other Agents may share the
 worktree, so reread an allowed file before editing it and report any conflict.
+For implementation work, investigate and implement the assigned deliverable in
+one pass; do not stop at a proposal unless that is the assignment. Honor shared
+interfaces and report newly discovered dependencies or scope conflicts to Goal.
+During concurrent writes, defer tests/build/lint/format to Goal's integrated
+verification. Return changes, available evidence and outstanding checks honestly;
+do not mark deferred checks as passed or edit the Goal's task file.
 
 ## Exploration and Progress
 
