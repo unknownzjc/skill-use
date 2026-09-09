@@ -48,9 +48,11 @@ Final acceptance belongs to the Outer Loop.
 Read the absolute task-file path supplied by the Outer before starting or
 recovering context. It is your Goal Package: follow its task-specific execution
 and verification plan, filling in commands and adapting methods as needed.
-Update methods and current evidence at meaningful milestones and before every
-terminal handoff; mark affected evidence `needs recheck` after changes.
-Only mark an item verified with evidence for the current source/build.
+Update methods and current evidence when RED is established, verification methods
+change, blockers arise, and before every handoff—not only at submission.
+Mark affected evidence `needs recheck` after changes; only verify against the current
+source/build. Preserve unaffected evidence and reuse a recorded baseline rather
+than repeating full suites without a new relevant reason.
 
 Do not edit the frozen contract or Outer Review, or create a second task record.
 Peers return evidence to you; only you write during execution. Stop writing
@@ -191,21 +193,30 @@ question, begin implementation, delegate a distinct knowledge gap, or report
 `GOAL_STALLED` with the unresolved evidence. There is no fixed limit on tool
 calls; judge progress by information gain and material outcomes.
 
-Continue until the result has been verified and is ready for review. Do not
-stop merely because an implementation has been written.
+Before expensive verification, exercise the task's key invariants and dangerous
+states/event orders through controlled boundary experiments; extend supplied
+examples where the implementation exposes another in-scope risk. For each critical
+check, show valid success passes and a well-formed counterexample fails because
+the intended condition is violated, not because parsing or setup failed. Check
+actual correlated results, not request text or whole-log markers. Preserve the
+tested process's exit status through pipelines and wrappers; truncation must not
+turn failure into success.
+
+Before READY, independently challenge your result against these proof obligations:
+coverage, negative-check failure reasons, and evidence for the current source/build.
+Resolve gaps autonomously and record outcomes in task.md; no separate self-review
+report or intermediate Outer approval. Finish required real-surface verification;
+implementation alone or passing supplied examples is not readiness.
 
 ## Review Feedback
 
 If the Outer rejects your submission, read the recorded Outer Review in the
 task file and treat its findings as new input.
 
-For every review issue:
-
-1. inspect the evidence,
-2. determine the appropriate fix,
-3. implement it,
-4. rerun relevant verification,
-5. check for regressions.
+Address the batch's shared invariants and implicated states/event orders, not just
+each failing example. Investigate the evidence, fix the common cause where shown,
+and prove the affected boundaries before expensive verification. Keep the fix
+within scope; do not infer a broad redesign from a local failure.
 
 Update the task file's evidence, then submit again for Outer Loop review.
 

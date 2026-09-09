@@ -31,11 +31,16 @@ Write four concise sections:
   shared context, frozen decisions, unknowns and relevant artifacts. Include Peer
   Runtime: ordered candidates/args, fallback procedure, absolute role path, startup
   and session-recovery instructions. Peer use is optional; these instructions are not.
-- Execution and Verification: task-specific steps, required scenarios, observable
-  pass/fail criteria and evidence. For bugs, first establish a failing minimal
-  reproduction and verify the checker rejects failure; use controlled boundary
-  experiments before expensive end-to-end runs, then validate the final build on
-  the required real surface. Don't guess code-level steps or impose irrelevant stages.
+- Execution and Verification: before dispatch, use known failure evidence and relevant
+  code boundaries to identify key invariants, dangerous states/event orders, and ways
+  evidence could falsely pass. Turn these into a few task-specific proof obligations,
+  not an implementation prescription or exhaustive test matrix. Supply a minimal
+  executable counterexample where risk is high and setup cheap; otherwise specify
+  the scenario and expected result. For bugs, require a failing minimal reproduction.
+  Before expensive end-to-end runs, Goal proves the boundaries and that each critical
+  check accepts valid success and rejects well-formed evidence violating its target
+  condition, for that reason rather than a parse/setup error. Then verify the current
+  final build on the required real surface; no extra approval gate.
 - Current Evidence: initially unverified; Goal records status (unverified, failed,
   needs recheck, verified), commands/results, evidence paths and tested source/build,
   including uncommitted changes. Invalidate evidence affected by edits; old builds
@@ -46,9 +51,10 @@ Write four concise sections:
 Outer owns the frozen contract and review; Goal owns methods and evidence and may
 adapt implementation without weakening acceptance or adding intermediate approvals.
 Only Goal writes while working; only Outer writes during review or after retirement.
-Peers return evidence to Goal, not to this file. Update at meaningful milestones
-and before terminal handoff, not after every tool call; no companion plan/status/
-handoff files. Outer does not poll it. Reuse its path on revision/fallback/resume.
+Peers return evidence to Goal, not to this file. Update when RED is established,
+verification methods change, blockers arise, and before handoff—not every tool call
+or only at submission. No companion plan/status/handoff files or Outer polling.
+Reuse the same path on revision/fallback/resume.
 After context loss read it; if missing, Outer reconstructs from preserved records
 before redispatch, never guesses absent contract/evidence. Keep credentials out.
 Supporting references/methods are not extra acceptance criteria; freeze scope.
@@ -140,13 +146,14 @@ NEEDS_CONTEXT_EXPANSION returns to Goal; Outer does not control healthy Peers.
 ## Review and termination
 
 At READY read task.md and independently inspect the actual changes/evidence against
-all frozen acceptance, regression risks and relevant checks. Reports are not proof.
-Goal owns full verification; Outer reruns the smallest checks needed for important
-risks. Record PASS only if satisfied, otherwise the complete evidence-backed REJECT
-batch (what is wrong, evidence, required change) in task.md. Prompt Goal to read it;
-return write ownership and wait for the next READY without mid-revision steering.
-Repeated failure at one seam requires a controlled experiment proving the shared
-invariant before another full verification run, not equivalent local patches.
+all frozen acceptance, regression risks and relevant checks, not only the supplied
+examples. Reports are not proof. Goal owns full verification; Outer reruns the smallest
+checks needed for important risks. Record PASS only if satisfied; otherwise write the
+complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
+From the first rejection, identify any shared invariant exposed by related failures
+and require controlled proof across the implicated states/orders before expensive
+verification—not a patch for each example or an unrelated redesign. Prompt Goal to
+read the batch, return write ownership, and wait without mid-revision steering.
 At max_review_rounds without PASS, report REVIEW_LIMIT_REACHED with findings by round,
 repeated/new issues, suspected design/requirement problem, current evidence and options
 to redesign, narrow scope, accept stated risk or stop. No new revision without user choice.
