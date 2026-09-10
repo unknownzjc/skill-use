@@ -37,10 +37,14 @@ Write four concise sections:
   not an implementation prescription or exhaustive test matrix. Supply a minimal
   executable counterexample where risk is high and setup cheap; otherwise specify
   the scenario and expected result. For bugs, require a failing minimal reproduction.
-  Before expensive end-to-end runs, Goal proves the boundaries and that each critical
-  check accepts valid success and rejects well-formed evidence violating its target
-  condition, for that reason rather than a parse/setup error. Then verify the current
-  final build on the required real surface; no extra approval gate.
+  Before broad implementation/caller migration, Goal challenges the chosen high-risk
+  mechanism with its strongest known counterexample at the actual boundary; failure
+  means revise the mechanism, not expand it. Record invariant, experiment, expected/
+  observed failure reason, and tested surface in task.md. Each critical check must
+  accept valid success and reject a well-formed violation for the intended reason.
+  Helper/mocked proof does not cover production launch options or another platform:
+  verify the real entry path and final build; label unavailable native proof separately.
+  Finish reachable work without claiming that missing proof; no extra approval gate.
 - Current Evidence: initially unverified; Goal records status (unverified, failed,
   needs recheck, verified), commands/results, evidence paths and tested source/build,
   including uncommitted changes. Invalidate evidence affected by edits; old builds
@@ -88,12 +92,12 @@ inspect get/read only for failed waits, blocking, ambiguous state or missing res
 Status updates need no query. Working Goal is autonomous: no incremental diff review,
 Peer monitoring or steering except explicit blocking/authority or lifecycle ambiguity.
 Herdr idle/done is not completion. Classify the semantic marker:
-- READY_FOR_OUTER_REVIEW: increment review round and independently review.
+- READY_FOR_OUTER_REVIEW: independently review under the counting rule below.
 - GOAL_BLOCKED: missing authority/input/external dependency; surface it.
 - GOAL_STALLED: no material progress; resume only for a materially different action,
   otherwise retire and replace within max_goal_attempts, or report GOAL_ATTEMPT_LIMIT_REACHED.
 No marker: use at most configured recovery prompts; exhaustion is a candidate failure
-only if missing_terminal_marker_after_recovery is configured. It is not a review round.
+only if missing_terminal_marker_after_recovery is configured. Recovery alone is not a review.
 Approval blocks must not be bypassed. If Goal output is truncated, read task.md;
 for Peer output use Herdr's file-output fallback. Timeout with observed progress
 means resume waiting, not runtime replacement.
@@ -126,17 +130,22 @@ No Peer candidate eligible: PEER_RUNTIME_EXHAUSTED; Goal continues or changes ap
 
 ## Peers
 
-After initial scoping, Goal prefers concurrent Peers when two or more substantial
-work packages can proceed independently with agreed interfaces and disjoint writes.
-Resolve shared prerequisites first, then dispatch each ready batch without waiting
-for one Peer to finish before starting another. Keep coupled work with one owner;
-do not split by file count, impose a Peer quota, or delegate the entire goal.
-Goal owns shared changes and integration; no duplicate work on Peer-owned questions.
-Track package/owner/scope/dependencies/status briefly in task.md, not separate files.
+After initial scoping, Goal records substantial packages, owners, scopes and dependencies
+briefly in task.md. Prefer concurrent Peers for ready independent packages. A shared file
+or unsettled interface is a prerequisite to isolate, not a blanket veto: Goal owns that
+boundary and integration. If staying solo, name the concrete coupling or small scope
+that makes delegation unhelpful, not merely "optional" or "tightly coupled".
+Reassess after the prerequisite resolves, a mechanism changes, or the first substantive
+REJECT. Consider distinct investigation/fixture work even when implementation is coupled.
+Mechanism proof is a readiness dependency for broad implementation packages, including
+Peer assignments: settle and run the minimal experiment before that writing batch.
+Dispatch ready siblings before waiting; do not duplicate their questions, invent trivial
+packages, impose a quota, or delegate the entire goal. Outer checks this decision at
+handoff, not through mid-execution supervision.
 
 Each assignment supplies Shared Context, Owned Question or implementation deliverable,
 Search Scope, Expansion Condition, Expected Delta, explicit Write Scope, dependencies,
-shared interfaces and observable completion criteria. Goal loads the Peer role,
+shared interfaces and relevant proof obligations/completion criteria. Goal loads the role,
 prompts ready sibling panes and consumes settled results as they arrive; integrate
 only returned scopes, without disrupting active writers. Defer tests/build/lint/format
 during concurrent writes; Goal verifies the integrated result after writers settle.
@@ -145,15 +154,19 @@ NEEDS_CONTEXT_EXPANSION returns to Goal; Outer does not control healthy Peers.
 
 ## Review and termination
 
-At READY read task.md and independently inspect the actual changes/evidence against
+Count each READY review once; also count any blocked/stalled-handoff inspection that
+finds defects and issues a substantive revision batch, including checker-only fixes.
+Pure blocker reports, recovery prompts and model changes do not consume review rounds;
+markers and model switches never reset counts or exempt real revisions from the limit.
+At review read task.md and independently inspect the actual changes/evidence against
 all frozen acceptance, regression risks and relevant checks, not only the supplied
 examples. Reports are not proof. Goal owns full verification; Outer reruns the smallest
 checks needed for important risks. Record PASS only if satisfied; otherwise write the
 complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
 From the first rejection, identify any shared invariant exposed by related failures
-and require controlled proof across the implicated states/orders before expensive
-verification—not a patch for each example or an unrelated redesign. Prompt Goal to
-read the batch, return write ownership, and wait without mid-revision steering.
+and require controlled proof across the implicated states/orders before expanding the
+repair or expensive verification—not equivalent local patches or an unrelated redesign.
+Return one complete batch only while below the review limit, then wait without steering.
 At max_review_rounds without PASS, report REVIEW_LIMIT_REACHED with findings by round,
 repeated/new issues, suspected design/requirement problem, current evidence and options
 to redesign, narrow scope, accept stated risk or stop. No new revision without user choice.
