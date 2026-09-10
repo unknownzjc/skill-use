@@ -15,6 +15,11 @@ change, blockers arise, and before every handoff—not only at submission.
 Mark affected evidence `needs recheck` after changes; only verify against the current
 source/build. Preserve unaffected evidence and reuse a recorded baseline rather
 than repeating full suites without a new relevant reason.
+Use the supplied `loopme.mjs` path (`--help`) for finite checks via `run` and
+acceptance-checker positive/negative fixtures via `check`; record their evidence paths
+here. Use `run --fingerprint` for relevant source/build files, including dirty/untracked
+inputs. Scripts capture execution and assertion identity, not business correctness;
+you still own the scenario, expected assertion and required real-surface verification.
 
 Do not edit the frozen contract or Outer Review, or create a second task record.
 Peers return evidence to you; only you write during execution. Stop writing

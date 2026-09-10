@@ -10,25 +10,25 @@ The Goal owns implementation and any optional Peers; do not add roles.
 
 ## Setup
 
-Read the available `herdr` skill before running the loop. Require `HERDR_ENV=1`;
-otherwise stop. Installed Herdr/runtime help is the authority for command syntax.
-Load [config.yaml](config.yaml) before creating a pane. Validate supported version,
-readable role paths resolved from this skill directory, nonempty candidate lists,
-candidate kinds, array args and optional string models, positive limits,
-nonnegative recovery_prompts, and understood strategy/trigger names.
-Report invalid configuration before dispatch; do not guess models or probe catalogs.
-Read both roles. Load the Goal role using the runtime's native system-prompt option;
-pass the Peer role and runtime instructions to the Goal. Outer reading a role alone
-is not role injection.
+Read the available `herdr` skill. Scripts require Node.js >=22 with no dependencies
+or installation step. From the actual execution shell, run
+`node <skill-dir>/scripts/loopme.mjs init`; it requires HERDR_ENV=1,
+validates [config.json](config.json) and readable roles, and discovers supported kinds
+from installed Herdr help before creating anything. Use returned JSON paths/run_id
+and resolved config; model/provider readiness is explicitly not checked. For validation
+without initialization use `check-config`; `--help` describes all options.
+Do not guess models or probe catalogs. Installed runtime help remains authoritative.
+Read both roles and inject Goal's role with the native system-prompt option. Supply
+Peer Runtime and the absolute script path to Goal; reading a role is not role injection.
 
 ## Task file
 
-Outer creates one task.md in a fresh private /tmp/loopme-<run-id>/ directory before
-opening the Goal pane. This is the Goal Package; dispatch its absolute path and a
-short read-and-execute instruction, not another copy of its contents.
-Write four concise sections:
+`init` creates a fresh private run directory in the system temp directory (normally
+/tmp), containing only a task.md draft. No Agent is started. Before opening the Goal
+pane, fill its four sections below; the draft is not a dispatchable contract. This is
+the sole Goal Package: dispatch its returned absolute path and a short instruction.
 - Frozen Task: goal, run identity, cwd, acceptance criteria, constraints, non-goals,
-  shared context, frozen decisions, unknowns and relevant artifacts. Include Peer
+  shared context, frozen decisions, unknowns, artifacts and absolute helper script path. Peer
   Runtime: ordered candidates/args, fallback procedure, absolute role path, startup
   and session-recovery instructions. Peer use is optional; these instructions are not.
 - Execution and Verification: before dispatch, use known failure evidence and relevant
@@ -62,6 +62,29 @@ Reuse the same path on revision/fallback/resume.
 After context loss read it; if missing, Outer reconstructs from preserved records
 before redispatch, never guesses absent contract/evidence. Keep credentials out.
 Supporting references/methods are not extra acceptance criteria; freeze scope.
+
+## Mechanical evidence helpers
+
+Use `node <script> run --task <task.md> --name <check> [--cwd <dir>]
+[--fingerprint <source-or-build-file> ...] -- <executable> <args...>` for finite
+checks. It saves full stdout/stderr, actual exit/signal, argv/cwd/platform and explicit
+file hashes before/after, in unique evidence directories beside task.md. Include
+relevant uncommitted/untracked files; hashes do not infer which acceptance is affected.
+The script preserves command status, not upstream shell-pipeline status; use explicit
+pipefail where needed. Keep services/Agents on existing lifecycle tools. Process exit
+is not tree-termination proof; a missing/invalid result.json is incomplete evidence.
+
+For private acceptance checkers use `node <script> check --task <task.md>
+--cases <manifest.json> -- <checker-command> <args...>`. The driver appends each fixture
+path. Manifest version 1 contains cases with name, fixture (relative to manifest), and
+expect: `{outcome:"accepted"}` or `{outcome:"rejected",assertion:"stable_id"}`; include
+both kinds. Checker stdout is one JSON object: accepted + exit 0, rejected with the
+matching assertion + exit 1, or invalid with message + exit 2. Crashes/parse errors,
+wrong reasons and inconsistent exits never count as a successful negative. See
+`--help` for valid JSON examples. Agent owns fixtures, business assertions and final
+judgment; script success is not product PASS. Record summary paths in task.md.
+Do not put credentials in recorded argv/logs; environment values are not dumped.
+On Windows, temp-directory privacy relies on its ACL; POSIX directories use mode 0700.
 
 ## Ownership and startup
 
