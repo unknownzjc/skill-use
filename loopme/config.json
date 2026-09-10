@@ -10,13 +10,19 @@
         {
           "name": "primary",
           "kind": "omp",
-          "model": "kimi-code/k3",
+          "model": "deepseek/deepseek-v4-pro",
           "args": []
         },
         {
           "name": "fallback",
           "kind": "omp",
           "model": "zhipu-coding-plan/glm-5.3",
+          "args": []
+        },
+        {
+          "name": "fallback-2",
+          "kind": "omp",
+          "model": "kimi-code/k3",
           "args": []
         }
       ]
@@ -37,6 +43,12 @@
             "--thinking",
             "max"
           ]
+        },
+        {
+          "name": "fallback-2",
+          "kind": "omp",
+          "model": "deepseek/deepseek-v4-pro",
+          "args": []
         }
       ]
     }
