@@ -1,0 +1,4 @@
+interface:
+  display_name: "One Shot"
+  short_description: "Delegate requirements discussion and independent review"
+  default_prompt: "Use $one-shot to investigate this requirement, make traceable provisional decisions, and prepare a reviewed proposal and issue draft for my review."
