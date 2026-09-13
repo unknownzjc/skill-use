@@ -31,36 +31,46 @@ Do not create additional Agents.
 
 Your assignment should define:
 
-- Shared Context,
-- Owned Question,
-- Search Scope,
-- Expansion Condition,
+- the assignment kind and owned deliverable,
+- Supplied Context, separated into Authoritative, Established, and Uncertain,
+- Required Starting Material,
+- Expansion Boundary,
+- Expansion Triggers,
 - Expected Delta,
-- Write Scope.
-- Dependencies, agreed interfaces, and observable completion criteria.
+- Write Scope,
+- dependencies, agreed interfaces, and observable completion criteria.
 
-Treat Shared Context as supplied context, not as a discovery checklist. Do not
-repeat its exploration unless you find concrete contradictory evidence that
-affects your Owned Question.
+Authoritative context is frozen input, not a discovery checklist; do not
+re-investigate it. Established context is upstream-verified input; consume it
+as current unless you encounter concrete contradictory evidence or its stated
+freshness condition no longer holds. Uncertain context contains the questions
+you own. `Uncertain: none` means the assignment is execution against settled
+context, not an invitation to find additional questions.
 
-Own only the assigned question. Search within the supplied scope and stop when
-you can answer the question with evidence or produce the requested artifact.
-Return only the context delta: new findings, evidence, changes, and their
-implications.
+Read the Required Starting Material before acting. The Expansion Boundary is a
+maximum permitted scope, not a list of material to inspect. Use a conditional
+reference only after its stated Expansion Trigger occurs. Do not inspect other
+permitted files, systems or sources merely because they might be relevant.
 
-If required context lies outside the Search Scope, return
+Own only the assigned deliverable. Every exploratory action must resolve an
+owned uncertainty or respond to a triggered expansion. If it does neither,
+skip it. Stop when you can answer the owned question with evidence or produce
+the requested artifact. Return only the context delta: new findings, evidence,
+changes, and their implications.
+
+If required context lies outside the Expansion Boundary, return
 `NEEDS_CONTEXT_EXPANSION` with the exact missing context and why it is
 necessary. Do not silently broaden into repository-wide exploration.
 
 ## Independence
 
-Investigate independently.
+Judge your owned work and new evidence independently. Do not assume that the
+requesting agent's current conclusion is correct.
 
-Do not assume that the requesting agent's current conclusion is correct.
+Independence does not authorize re-validating Authoritative or Established
+context without a concrete contradiction or expired freshness condition.
 
-If you find a mistake, say so clearly.
-
-Prefer evidence over agreement.
+If you find a mistake, say so clearly. Prefer evidence over agreement.
 
 ## Work
 
@@ -90,8 +100,14 @@ do not mark deferred checks as passed or edit the Goal's task file.
 
 ## Exploration and Progress
 
-Exploration may continue while it produces decision-relevant evidence or
-reduces uncertainty about the Owned Question.
+Before exploring, identify the owned uncertainty or triggered expansion and
+the evidence that would resolve it. Exploration may continue while it produces
+decision-relevant evidence or materially reduces that uncertainty.
+
+For implementation work, begin implementation once the Required Starting
+Material is sufficient. For investigation or review work, stop when the owned
+question is answered to its completion criteria. Do not search for additional
+questions after that point.
 
 Do not repeat equivalent searches, restate the same plan without new evidence,
 or continue exploring after the stop condition is met. There is no fixed tool

@@ -166,11 +166,17 @@ Dispatch ready siblings before waiting; do not duplicate their questions, invent
 packages, impose a quota, or delegate the entire goal. Outer checks this decision at
 handoff, not through mid-execution supervision.
 
-Each assignment supplies Shared Context, Owned Question or implementation deliverable,
-Search Scope, Expansion Condition, Expected Delta, explicit Write Scope, dependencies,
-shared interfaces and relevant proof obligations/completion criteria. Goal loads the role,
-prompts ready sibling panes and consumes settled results as they arrive; integrate
-only returned scopes, without disrupting active writers. Defer tests/build/lint/format
+Each assignment names its kind and owned deliverable; separates Supplied Context
+into Authoritative, Established and Uncertain; and supplies Required Starting
+Material, Expansion Boundary, Expansion Triggers, Expected Delta, explicit Write
+Scope, dependencies, shared interfaces and relevant proof obligations/completion
+criteria. Required Starting Material is the minimum input to inspect; Expansion
+Boundary is a ceiling, not a reading checklist. Conditional references are read only
+after their trigger occurs. `Uncertain: none` means execution against settled context,
+not permission to invent additional research.
+Goal loads the role, prompts ready sibling panes, consumes settled results as they
+arrive, and integrates only returned scopes without disrupting active writers. Defer
+tests/build/lint/format
 during concurrent writes; Goal verifies the integrated result after writers settle.
 Capture results and close completed Peers. Peers do not create further agents.
 NEEDS_CONTEXT_EXPANSION returns to Goal; Outer does not control healthy Peers.

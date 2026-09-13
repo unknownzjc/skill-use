@@ -90,16 +90,32 @@ rather than handing the same work through separate research and coding agents.
 Give each Peer Agent one clear and bounded knowledge gap or deliverable. Its
 assignment must contain:
 
-- Shared Context,
-- Owned Question,
-- Search Scope,
-- Expansion Condition,
+- the assignment kind and owned deliverable,
+- Supplied Context, separated into Authoritative, Established, and Uncertain,
+- Required Starting Material,
+- Expansion Boundary,
+- Expansion Triggers,
 - Expected Delta,
-- Write Scope, which is either read-only or an explicit set of files.
-- Dependencies, agreed interfaces, relevant proof obligations and completion criteria.
+- Write Scope, which is either read-only or an explicit set of files,
+- dependencies, agreed interfaces, relevant proof obligations and completion criteria.
 
-Shared Context is context the Peer can use without rediscovering it. Do not
-delegate a question that you will investigate concurrently. Different Peers
+Authoritative context contains frozen goals, decisions and constraints; the Peer
+must not rediscover it. Established context contains upstream-verified facts,
+interfaces and evidence that the Peer should consume as current unless concrete
+contradictory evidence or an explicit freshness condition invalidates them. Include
+useful provenance, ownership or freshness information when the context is mutable;
+do not require a file hash when it would not establish freshness. Uncertain context
+contains the questions the Peer owns. Write `Uncertain: none` when the assignment
+is execution against a settled contract rather than investigation.
+
+Required Starting Material is the minimum input the Peer must inspect before acting.
+Expansion Boundary is the maximum permitted scope, not a reading checklist.
+Conditional references belong under Expansion Triggers with the concrete condition
+that makes each reference necessary. After consuming the starting material, the
+Peer should act or answer unless an owned uncertainty or triggered expansion still
+blocks it.
+
+Do not delegate a question that you will investigate concurrently. Different Peers
 must not own overlapping questions.
 
 If a Peer writes in the shared worktree, do not modify its Write Scope until
