@@ -1,4 +1,4 @@
 interface:
   display_name: "One Shot"
-  short_description: "Delegate requirements discussion and independent review"
-  default_prompt: "Use $one-shot to investigate this requirement, make traceable provisional decisions, and prepare a reviewed proposal and issue draft for my review."
+  short_description: "Review a proposal, then deliver clean project docs"
+  default_prompt: "Use $one-shot to investigate this requirement in the current project's .one-shot/<task-id>/ directory, develop and independently review project-format document drafts with human choices in a separate guide, then after my approval apply those same spec and warranted context/ADR drafts at their project destinations."

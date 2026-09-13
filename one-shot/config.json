@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "agents": {
+    "designer": {
+      "kind": "omp",
+      "model": "deepseek/deepseek-v4-pro",
+      "args": []
+    },
+    "reviewer": {
+      "kind": "omp",
+      "model": "zai/glm-5.3",
+      "args": []
+    }
+  }
+}
