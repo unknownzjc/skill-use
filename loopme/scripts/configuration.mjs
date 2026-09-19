@@ -246,14 +246,35 @@ export async function initialize(configPath = undefined, { herdr = 'herdr', root
   await fs.access(parent, constants.W_OK | constants.X_OK);
   const runId = `lm-${randomBytes(8).toString('hex')}`;
   const text = '# Frozen Task\n\n'
-    + 'CONTRACT INCOMPLETE — fill the goal, acceptance criteria, constraints, non-goals, shared context, '
+    + 'CONTRACT INCOMPLETE — fill the goal, acceptance criteria, constraints/required gates, non-goals, shared context, '
     + 'frozen decisions, unknowns, artifacts, and Peer Runtime before dispatch.\n\n'
-    + `Run identity: ${runId}\nWorking directory: ${process.cwd()}\n\n`
+    + `Run identity: ${runId}\nWorking directory: ${process.cwd()}\n`
+    + `Helper script: ${path.join(SKILL_ROOT, 'scripts', 'loopme.mjs')}\n`
+    + `Acceptance guide: ${path.join(SKILL_ROOT, 'references', 'acceptance.md')}\n\n`
+    + 'Use the guide before freezing. Replace placeholders and add/remove A/G items and evidence rows to match the task.\n\n'
+    + '## Acceptance\n\n'
+    + 'A1 — <task-specific, adjudicable outcome>\n'
+    + 'Context: <conditions and action, artifact, or invariant scope>\n'
+    + 'Expected: <observable result; include a concrete example when useful>\n'
+    + 'Required proof: <minimum boundary, decision rule, and evidence to retain>\n\n'
+    + '## Constraints / Required Gates\n\n'
+    + 'Constraints: <limits that must remain satisfied>\n'
+    + 'G1 — <applicable quality gate, scope and baseline; or explicitly none with reason>\n'
+    + 'Gate success does not replace an acceptance outcome; classify engineering deliverables by what is checked, not the tool.\n\n'
     + '# Execution and Verification\n\n'
-    + 'Before dispatch, fill task-specific invariants, proof obligations, counterexamples, and expected results. '
+    + 'Before dispatch, fill task-specific invariants, proof obligations, counterexamples, and expected results.\n'
+    + 'P1 -> A1: <method at the required boundary, expected result and relevant counterexample; '
+    + 'Goal may refine commands without weakening proof>\n'
+    + 'G1: <gate verification method and expected result>\n'
     + 'No execution or verification has occurred.\n\n'
     + '# Current Evidence\n\n'
-    + 'Status: unverified. No commands, results, or acceptance evidence recorded.\n\n'
+    + 'Status: unverified. No commands, results, or acceptance evidence recorded.\n'
+    + 'Keep one row per required A/G ID; record observed results, evidence references and tested boundary/source/build, '
+    + 'including uncommitted changes.\n\n'
+    + '| ID | Status | Evidence / observed result | Tested boundary / source / build |\n'
+    + '| --- | --- | --- | --- |\n'
+    + '| A1 | unverified | none | not tested |\n'
+    + '| G1 | unverified | none | not tested |\n\n'
     + '# Outer Review\n\n'
     + `Not reviewed. Reviews: 0/${result.config.limits.max_review_rounds}. No acceptance decision.\n`;
   const runDir = await fs.mkdtemp(path.join(parent, 'loopme-'));

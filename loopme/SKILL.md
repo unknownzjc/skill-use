@@ -27,8 +27,18 @@ Peer Runtime and the absolute script path to Goal; reading a role is not role in
 /tmp), containing only a task.md draft. No Agent is started. Before opening the Goal
 pane, fill its four sections below; the draft is not a dispatchable contract. This is
 the sole Goal Package: dispatch its returned absolute path and a short instruction.
-- Frozen Task: goal, run identity, cwd, acceptance criteria, constraints, non-goals,
-  shared context, frozen decisions, unknowns, artifacts and absolute helper script path. Peer
+
+Read [acceptance guidance](references/acceptance.md) before freezing or reviewing the
+contract. Give each task-specific outcome a stable A ID, relevant conditions, expected
+result and minimum proof boundary/decision rule. Behavior, artifact and invariant
+forms are valid; Given–When–Then is useful, not mandatory syntax. Put applicable
+common quality gates under Constraints / Required Gates with G IDs; gate success
+cannot substitute for an outcome. Classify by what is checked, not the tool or whether
+a person or program judges it; engineering capabilities can themselves be deliverables.
+Resolve unclear outcomes or missing credible verification paths before dispatch.
+
+- Frozen Task: goal, run identity, cwd, acceptance criteria, constraints/required gates,
+  non-goals, shared context, frozen decisions, unknowns, artifacts and absolute helper script path. Peer
   Runtime: ordered candidates/args, fallback procedure, absolute role path, startup
   and session-recovery instructions. Peer use is optional; these instructions are not.
 - Execution and Verification: before dispatch, use known failure evidence and relevant
@@ -45,9 +55,11 @@ the sole Goal Package: dispatch its returned absolute path and a short instructi
   Helper/mocked proof does not cover production launch options or another platform:
   verify the real entry path and final build; label unavailable native proof separately.
   Finish reachable work without claiming that missing proof; no extra approval gate.
-- Current Evidence: initially unverified; Goal records status (unverified, failed,
-  needs recheck, verified), commands/results, evidence paths and tested source/build,
-  including uncommitted changes. Invalidate evidence affected by edits; old builds
+- Current Evidence: initially unverified; map every required A/G ID to status
+  (unverified, failed, needs recheck, verified), commands/results, evidence references,
+  tested boundary and source/build, including uncommitted changes. One item may need
+  several records; one record may support several items. Record the actual result
+  and coverage, not just a path. Invalidate evidence affected by edits; old builds
   and substitute scenarios do not establish final success.
 - Outer Review: initially not reviewed; Outer records each round, decision, findings,
   evidence and stop reason. Preserve previous rounds and counts.
@@ -62,6 +74,9 @@ Reuse the same path on revision/fallback/resume.
 After context loss read it; if missing, Outer reconstructs from preserved records
 before redispatch, never guesses absent contract/evidence. Keep credentials out.
 Supporting references/methods are not extra acceptance criteria; freeze scope.
+If the contract needs correction, Outer records the change and reason, preserves the
+previous contract/review history, and invalidates affected evidence. Do not disguise
+new requirements as implementation defects or reset review/attempt counts.
 
 ## Mechanical evidence helpers
 
@@ -82,7 +97,10 @@ both kinds. Checker stdout is one JSON object: accepted + exit 0, rejected with 
 matching assertion + exit 1, or invalid with message + exit 2. Crashes/parse errors,
 wrong reasons and inconsistent exits never count as a successful negative. See
 `--help` for valid JSON examples. Agent owns fixtures, business assertions and final
-judgment; script success is not product PASS. Record summary paths in task.md.
+judgment; script success is not product PASS. Both outcomes are required across the
+manifest, not automatically for every AC. Fixture success alone does not establish
+real-product execution or full per-AC coverage; retain required real-entry evidence
+and map run/check records (including summary paths) to A IDs in task.md.
 Do not put credentials in recorded argv/logs; environment values are not dumped.
 On Windows, temp-directory privacy relies on its ACL; POSIX directories use mode 0700.
 
@@ -188,10 +206,13 @@ finds defects and issues a substantive revision batch, including checker-only fi
 Pure blocker reports, recovery prompts and model changes do not consume review rounds;
 markers and model switches never reset counts or exempt real revisions from the limit.
 At review read task.md and independently inspect the actual changes/evidence against
-all frozen acceptance, regression risks and relevant checks, not only the supplied
-examples. Reports are not proof. Goal owns full verification; Outer reruns the smallest
-checks needed for important risks. Record PASS only if satisfied; otherwise write the
-complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
+all frozen acceptance, required gates, constraints and regression risks, not only the
+supplied examples. Reports are not proof. Goal owns full verification; Outer reruns
+the smallest checks needed for important risks. Check every required A/G evidence row:
+PASS requires sufficient current proof at the required boundaries and compliance with
+constraints. Distinguish observed violations from proof gaps and contract defects.
+Record PASS only when satisfied; missing, invalid or stale proof cannot count. Otherwise
+write the complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
 From the first rejection, identify any shared invariant exposed by related failures
 and require controlled proof across the implicated states/orders before expanding the
 repair or expensive verification—not equivalent local patches or an unrelated redesign.

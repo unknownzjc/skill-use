@@ -141,3 +141,50 @@ test('init rejects invalid prerequisites without creating a run, then creates pr
     assert.equal((await fs.stat(first.task_path)).mode & 0o777, 0o600);
   }
 });
+
+test('init scaffolds acceptance, gates and per-item evidence without declaring readiness', async t => {
+  const { dir, invoke } = await workspace(t);
+  const root = path.join(dir, 'drafts with spaces');
+  await fs.mkdir(root);
+  await fs.writeFile(path.join(dir, 'agent'), 'console.log("kinds: omp"); process.exitCode=2;');
+  const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
+  config.limits.max_review_rounds = 7;
+  const customConfig = path.join(dir, 'custom config.json');
+  await fs.writeFile(customConfig, JSON.stringify(config));
+  const result = invoke(['init', '--config', customConfig, '--herdr', process.execPath, '--root', root], 0, { HERDR_ENV: '1' });
+  const draft = await fs.readFile(result.task_path, 'utf8');
+  const sections = draft.split(/^# /m).slice(1);
+  assert.deepEqual(sections.map(section => section.split('\n')[0]), [
+    'Frozen Task', 'Execution and Verification', 'Current Evidence', 'Outer Review',
+  ]);
+  const [frozen, plan, evidence, review] = sections;
+  assert.match(frozen, /CONTRACT INCOMPLETE/);
+  assert.ok(frozen.includes(`Run identity: ${result.run_id}\n`));
+  assert.ok(frozen.includes(`Working directory: ${dir}\n`));
+  assert.match(frozen, /^## Acceptance$/m);
+  assert.match(frozen, /^A1 — /m);
+  for (const field of ['Context', 'Expected', 'Required proof']) {
+    assert.ok(frozen.includes(`\n${field}: `), `missing acceptance field: ${field}`);
+  }
+  assert.match(frozen, /^## Constraints \/ Required Gates$/m);
+  assert.match(frozen, /^G1 — /m);
+  assert.match(plan, /^P1 -> A1:/m);
+  assert.match(plan, /^G1:/m);
+  const rows = evidence.split('\n').filter(line => /^\| [AG]\d+ \|/.test(line))
+    .map(line => line.split('|').slice(1, -1).map(cell => cell.trim()));
+  assert.deepEqual(rows, [
+    ['A1', 'unverified', 'none', 'not tested'],
+    ['G1', 'unverified', 'none', 'not tested'],
+  ]);
+  for (const [label, relative] of [
+    ['Acceptance guide', '../references/acceptance.md'],
+    ['Helper script', './loopme.mjs'],
+  ]) {
+    const filename = fileURLToPath(new URL(relative, import.meta.url));
+    assert.ok(frozen.includes(`${label}: ${filename}\n`));
+    assert.equal((await fs.stat(filename)).isFile(), true);
+  }
+  assert.match(review, /Not reviewed\. Reviews: 0\/7\. No acceptance decision\./);
+  assert.equal(result.dispatched, false);
+  assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
+});
