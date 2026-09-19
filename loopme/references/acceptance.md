@@ -46,6 +46,61 @@ and threshold. Do not substitute an adjective such as "fast" or "robust". Split
 independently decidable outcomes, but keep related assertions needed to describe one
 coherent result together.
 
+## Executable behavior specifications
+
+For critical, objective behavior whose execution boundary is reachable, require an
+executable acceptance check before readiness, using the project's existing test stack.
+Use existing Gherkin/step definitions when present; do not install Cucumber or require
+`.feature` files merely for uniform formatting. Artifact judgment remains valid where
+execution cannot adequately decide the result. Record infeasibility and the remaining
+proof gap rather than calling a written scenario executed or adding an approval gate.
+
+Keep four responsibilities explicit:
+
+- **Execution coverage:** map A ID -> named scenario/test -> binding/assertion code ->
+  actual run result and observed artifact. Confirm the required case ran and passed;
+  zero selected cases, skipped/pending/undefined steps and unrelated smoke tests do
+  not establish it, even when the overall command exits zero.
+- **Expected-result authority:** derive expected values from the frozen requirement,
+  not by copying the implementation's current output. Outer inspects changes to the
+  scenario, assertions, snapshots, fixtures and skip/filter configuration. Semantic
+  corrections follow the existing contract-change rule; equivalent refactoring of
+  test code is allowed. Do not freeze test implementation merely to protect meaning.
+- **Discriminating assertions:** apply the positive/violation checks below to critical
+  bindings and private checkers. Logging success or computing a boolean that the
+  runner ignores is not an assertion. Use canonical observations derived independently
+  of the candidate oracle; a checker and fixtures rewritten to agree can both be wrong.
+- **Required boundary:** bind the behavior to its frozen entry/build requirement.
+  Helper-only success and checker-only fixture success remain local evidence, not
+  proof that the public entry actually produced the required artifact.
+
+For example, an export requirement should distinguish all filtered rows from the
+current page, rather than merely say that an export button works:
+
+```gherkin
+@A1
+Feature: Export filtered records
+  Scenario: Export spans pages
+    Given the filtered record IDs are r1, r3 and r5
+    And the current page displays only r1 and r3
+    When the user exports all filtered records
+    Then the CSV is parseable and its record IDs are exactly r1, r3 and r5
+    And each ID occurs exactly once
+```
+
+Bind this to the actual export operation and compare the parsed output, not only
+request arguments or a success log. Native tests with the same semantics are equally
+valid. A `.feature` is readable specification; binding it and recording execution is
+what supplies evidence. See the [Gherkin reference](https://cucumber.io/docs/gherkin/reference/)
+and [step result semantics](https://cucumber.io/docs/cucumber/api/#step-results).
+
+Keep reusable scenarios/bindings or native regression tests in the target project,
+maintained alongside approved behavior changes. The private task.md is the current
+run's coordination/evidence record, not a second copy of that regression specification.
+The one-task-file rule forbids companion status records, not legitimate test artifacts.
+None of this makes LoopMe a non-bypassable acceptance gate: its helpers record evidence;
+Outer still judges coverage, meaning and sufficiency.
+
 ## Map each outcome to evidence
 
 In Frozen Task, define what would establish the result. In Execution and Verification,
@@ -145,6 +200,8 @@ gap blocks PASS but does not by itself prove the implementation wrong.
 | The mock export is correct, so export works. | The claimed boundary exceeds the evidence. | Retain the real-entry export and compare its records; label mock evidence as local only. |
 | The negative command failed, so rejection works. | A crash may precede the target condition. | Show that the well-formed violation reached the assertion and was rejected for that exact semantic reason. |
 | The risk document exists. | Presence is not content adequacy. | Inspect its required risks, affected scope and reproduction steps against the actual diff and evidence. |
+| The feature file exists and the suite is green. | The required scenario may be unbound, skipped or excluded. | Link its A ID, binding and actual passed result; inspect the test selection. |
+| Regenerate expected output until the test passes. | Implementation and oracle can drift together away from the contract. | Restore the frozen expectation or obtain an explicit contract correction; challenge the checker with independent valid and violating observations. |
 | A screenshot proves the entire workflow. | A still image does not show all interactions or persistence. | Name the visible state it proves and add interaction/persistence observations for the remaining claims. |
 | The old build passed and fingerprints did not change. | The selected files may omit the edited input or delivered artifact. | Identify the tested source/build, include relevant dirty inputs, and rerun affected proof on the delivered result. |
 

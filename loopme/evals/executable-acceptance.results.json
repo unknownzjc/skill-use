@@ -1,0 +1,149 @@
+{
+  "scope": "deterministic mechanism ablation; not agent behavior or old/new skill performance",
+  "comparison_base": "4e786f6dce2618109fe73e928b966650f3290f1a",
+  "runtime": {
+    "node": "v22.16.0",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "source_sha256": {
+    "../scripts/loopme.mjs": "0b312d1aff27b1008dff9c454cc9ed1b57811915394abfdc48a90e140c24e605",
+    "../scripts/checker.mjs": "153b6cd6c39d29cfa21d9d304a15c6e191a3ccc3741c4865edc3b4794da27a77",
+    "../scripts/evidence.mjs": "efea182ea5135fe763e65b816bd66528105e65c83f97194862e315124d6cc299",
+    "../SKILL.md": "a9a8f7b2c683d6a31cfc214f9d64a73bf369703eddefaef3301fcef2284f4fd1",
+    "../references/acceptance.md": "8665afce17bc175aa529e1e36cff8eaf2f40e947b5adcd928ccc43cf42d23f36",
+    "../references/goal-agent.md": "68a74b0e0e8dfd2a1748e1001094b63628f9bc5e3a9830f87c4f30c6c7b9f210",
+    "executable-acceptance.mjs": "adf706187fc952d2620c299ac9c6d4f0853d6237c1177c83b34ae88150a93484"
+  },
+  "corpus": {
+    "valid": 8,
+    "invalid": 18
+  },
+  "scores": [
+    {
+      "arm": "exit-only-control",
+      "omitted": [
+        "execution",
+        "frozen-expectation",
+        "checker-challenge",
+        "real-entry"
+      ],
+      "false_accepts": [
+        "0/feature-only",
+        "0/skipped-scenario",
+        "0/wrong-scenario-id",
+        "0/empty-assertion",
+        "0/ignored-false",
+        "0/weakened-expectation",
+        "0/helper-substitution",
+        "0/skip-plus-noop",
+        "1/feature-only",
+        "1/skipped-scenario",
+        "1/wrong-scenario-id",
+        "1/empty-assertion",
+        "1/ignored-false",
+        "1/weakened-expectation",
+        "1/helper-substitution",
+        "1/skip-plus-noop"
+      ],
+      "false_rejects": []
+    },
+    {
+      "arm": "full",
+      "omitted": [],
+      "false_accepts": [],
+      "false_rejects": []
+    },
+    {
+      "arm": "minus-execution",
+      "omitted": [
+        "execution"
+      ],
+      "false_accepts": [
+        "0/wrong-scenario-id",
+        "1/wrong-scenario-id"
+      ],
+      "false_rejects": []
+    },
+    {
+      "arm": "minus-frozen-expectation",
+      "omitted": [
+        "frozen-expectation"
+      ],
+      "false_accepts": [],
+      "false_rejects": []
+    },
+    {
+      "arm": "minus-checker-challenge",
+      "omitted": [
+        "checker-challenge"
+      ],
+      "false_accepts": [
+        "0/empty-assertion",
+        "0/ignored-false",
+        "1/empty-assertion",
+        "1/ignored-false"
+      ],
+      "false_rejects": []
+    },
+    {
+      "arm": "minus-real-entry",
+      "omitted": [
+        "real-entry"
+      ],
+      "false_accepts": [
+        "0/helper-substitution",
+        "1/helper-substitution"
+      ],
+      "false_rejects": []
+    },
+    {
+      "arm": "minus-expectation-and-challenge",
+      "omitted": [
+        "frozen-expectation",
+        "checker-challenge"
+      ],
+      "false_accepts": [
+        "0/empty-assertion",
+        "0/ignored-false",
+        "0/weakened-expectation",
+        "1/empty-assertion",
+        "1/ignored-false",
+        "1/weakened-expectation"
+      ],
+      "false_rejects": []
+    }
+  ],
+  "reproduction": {
+    "fresh_runs": 2,
+    "identical_decisions": true,
+    "raw_report_sha256": "3e7d3567a27eb46cf7b7d394b6b848a320920d0a7177d1391da70c8ea518a4da"
+  },
+  "negative_control": {
+    "intentional_mutation": "disable real-entry guard even in the full arm",
+    "exit": 1,
+    "expected_assertion": "full policy admitted a known defect/proof gap",
+    "observed_false_accepts": [
+      "0/helper-substitution",
+      "1/helper-substitution"
+    ],
+    "restored": true
+  },
+  "helper_regression": {
+    "before": {
+      "passed": 5,
+      "failed": 0
+    },
+    "after": {
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "limitations": [
+    "Handwritten mechanism evaluator; no LLM reads the skill.",
+    "Exit-only control is not the old LoopMe policy.",
+    "Two fixed datasets are not independent real-world tasks.",
+    "The native-no-feature control does not measure Gherkin prompting value.",
+    "No Herdr, Cucumber engine, native Windows or persistence-lifecycle experiment."
+  ]
+}
