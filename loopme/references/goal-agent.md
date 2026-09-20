@@ -40,6 +40,15 @@ Missing or invalid proof stays unverified; affected prior proof needs recheck. D
 mark an item verified or silently waive it because a command ran or a file exists.
 
 Do not edit the frozen contract or Outer Review, or create a second task record.
+Treat Authoritative context as requirements, Established facts as sourced observations
+within their applicability, and Uncertain items as questions/assumptions, not decisions.
+Resolve assigned in-scope technical unknowns; record findings and new questions in
+Execution and Current Evidence, referencing the initial context rather than rewriting it.
+Report contradictions or missing scope/authority/risk decisions to Outer before dependent
+work; continue independent authorized work without inventing a decision. Keep candidate
+steps/file edits in Execution. Respect sourced technical constraints and authorized write
+limits; an expected edit list is neither authorization nor a delivered result. Deliverables
+reference the frozen A IDs, not a second acceptance specification.
 Peers return evidence to you; only you write during execution. Stop writing
 when handing control to the Outer. If the file is missing, ask the Outer to
 restore it from preserved records rather than inventing its contents.

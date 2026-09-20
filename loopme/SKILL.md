@@ -43,10 +43,16 @@ scenarios/tests, assertions and actual results. A written scenario or zero-exit 
 without the required case running is not proof. Preserve the frozen Given / When /
 Then meaning when adapting tests.
 
-- Frozen Task: goal, run identity, cwd, acceptance criteria, constraints/required gates,
-  non-goals, shared context, frozen decisions, unknowns, artifacts and absolute helper script path. Peer
-  Runtime: ordered candidates/args, fallback procedure, absolute role path, startup
-  and session-recovery instructions. Peer use is optional; these instructions are not.
+- Frozen Task: run identity, cwd and absolute helper path; Goal and Scope (result,
+  in-scope boundaries, non-goals); Shared Context and Unknowns (Authoritative references,
+  Established facts with sources/applicability, Uncertain questions/assumptions with
+  impact and resolution owner/authority); confirmed Frozen Decisions with source,
+  rationale and scope; Deliverables with required location/consumer entry when constrained
+  and A IDs; Acceptance and Constraints / Required Gates. Use explicit none where
+  applicable, not blanks; reference facts/requirements rather than copying them.
+  Peer Runtime: ordered candidates/args from resolved config, fallback procedure,
+  absolute role path, startup and session-recovery instructions. Peer use is optional;
+  these instructions are not.
 - Execution and Verification: before dispatch, use known failure evidence and relevant
   code boundaries to identify key invariants, dangerous states/event orders, and ways
   evidence could falsely pass. Turn these into a few task-specific proof obligations,
@@ -72,6 +78,14 @@ Then meaning when adapting tests.
 
 Outer owns the frozen contract and review; Goal owns methods and evidence and may
 adapt implementation without weakening acceptance or adding intermediate approvals.
+Keep candidate plans and predicted file edits in Execution; sourced technical constraints
+and authorized write limits may be frozen, but tentative choices must not become mandates.
+Do not present assumptions as established facts. Resolve missing scope/authority/risk
+decisions before dependent work; assign in-scope technical unknowns to Goal. Frozen
+context records the starting state: Goal records discoveries/resolutions in Execution
+and Current Evidence and reports contradictions needing an Outer contract correction.
+Required outcome invariants belong in Acceptance/Constraints; their experiments belong
+in Execution. Completing placeholders is contract preparation, not another approval stage.
 Only Goal writes while working; only Outer writes during review or after retirement.
 Peers return evidence to Goal, not to this file. Update when RED is established,
 verification methods change, blockers arise, and before handoff—not every tool call

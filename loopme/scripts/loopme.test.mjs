@@ -192,3 +192,51 @@ test('init scaffolds required Given-When-Then acceptance, gates and evidence wit
   assert.equal(result.dispatched, false);
   assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
 });
+
+test('init scaffolds scoped context, decisions, deliverables and Peer Runtime without freezing a plan', async t => {
+  const { dir, invoke } = await workspace(t);
+  await fs.writeFile(path.join(dir, 'agent'), 'console.log("kinds: omp"); process.exitCode=2;');
+  const result = invoke(['init', '--herdr', process.execPath, '--root', dir], 0, { HERDR_ENV: '1' });
+  const draft = await fs.readFile(result.task_path, 'utf8');
+  const [, frozen, execution] = draft.split(/^# /m);
+  const subsections = frozen.split(/^## /m).slice(1);
+  const headings = subsections.map(section => section.split('\n')[0]);
+  assert.deepEqual(headings, [
+    'Goal and Scope', 'Shared Context and Unknowns', 'Frozen Decisions', 'Deliverables',
+    'Acceptance', 'Constraints / Required Gates', 'Peer Runtime',
+  ], 'Frozen must scaffold each contract area separately');
+  const sections = Object.fromEntries(subsections.map(section => {
+    const newline = section.indexOf('\n');
+    return [section.slice(0, newline), section.slice(newline + 1)];
+  }));
+  const fieldsBySection = {
+    'Goal and Scope': ['Goal', 'In scope', 'Non-goals'],
+    'Shared Context and Unknowns': ['Authoritative', 'Established', 'Uncertain'],
+    'Frozen Decisions': ['Decisions'],
+    Deliverables: ['Deliverables'],
+    'Peer Runtime': ['Candidates and args', 'Fallback', 'Startup', 'Session recovery'],
+  };
+  for (const [heading, fields] of Object.entries(fieldsBySection)) {
+    for (const field of fields) {
+      const matches = [...sections[heading].matchAll(new RegExp(`^${field}: <[^>]+>$`, 'gm'))];
+      assert.equal(matches.length, 1, `missing or duplicate draft field: ${heading} / ${field}`);
+    }
+  }
+  assert.match(sections['Shared Context and Unknowns'], /Uncertain: <[^>]*impact[^>]*owner[^>]*authority/);
+  assert.match(sections['Frozen Decisions'], /Decisions: <[^>]*source[^>]*rationale[^>]*scope/);
+  assert.match(sections.Deliverables, /Deliverables: <[^>]*A IDs/);
+  const runtime = sections['Peer Runtime'];
+  assert.ok(runtime.includes(`Role path: ${result.config.roles.peer}\n`));
+  assert.equal(path.isAbsolute(result.config.roles.peer), true);
+  assert.equal((await fs.stat(result.config.roles.peer)).isFile(), true);
+  assert.match(runtime, /Peer use is optional; this runtime handoff is required\./);
+  assert.match(frozen, /Do not freeze candidate plans or predicted file edits/);
+  assert.match(frozen, /Do not promote assumptions to facts or pending choices to frozen decisions/);
+  assert.match(frozen, /Goal may change methods in Execution and Verification, not acceptance meaning or minimum proof/);
+  assert.doesNotMatch(frozen, /^Plan:/m);
+  for (const field of ['Plan', 'Unknown resolution']) {
+    assert.match(execution, new RegExp(`^${field}: <[^>]+>$`, 'm'), `missing execution field: ${field}`);
+  }
+  assert.equal(result.dispatched, false);
+  assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
+});

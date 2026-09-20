@@ -31,6 +31,38 @@ reason, retain prior history, invalidate affected evidence, and respect user aut
 over scope or risk acceptance. It does not reset review/attempt counts or retroactively
 turn a newly added requirement into an implementation defect.
 
+## Complete the rest of Frozen Task
+
+Use the draft's named fields, not one catch-all goal paragraph. Replace placeholders
+before dispatch; explicitly state none where applicable instead of leaving blanks.
+These fields describe the current increment, not an exhaustive design document.
+
+| Area | What to record | Boundary |
+| --- | --- | --- |
+| Goal and Scope | Intended result, covered behaviors/objects/boundaries and explicit non-goals. | Steps and predicted file edits belong in Execution, not the goal. |
+| Shared Context and Unknowns | Authoritative references to requirements/decisions; Established facts with sources and applicable versions/conditions; Uncertain questions or assumptions with impact and resolution owner/authority. | Do not turn assumptions into facts. Unknowns live here once, not in a duplicate register. |
+| Frozen Decisions | Confirmed decision, source/authority, rationale and scope; explicitly none if there are no confirmed decisions. | Candidate approaches remain revisable. Sourced technical constraints and authorized write limits may be frozen; a predicted edit list is not a write limit. |
+| Deliverables | Artifact or result, required location or consumer entry when constrained, and relevant A IDs. | State the consumer-visible obligation through those ACs; do not substitute predicted internal edits for outputs or duplicate acceptance. |
+| Peer Runtime | Ordered candidates/argv and fallback from resolved config, absolute role path, supported startup and session recovery. | Complete the handoff even when Peer use is optional; do not guess runtime support. |
+
+Resolve scope, authority and risk-acceptance decisions before dependent work. A technical
+unknown that Goal can investigate within the authorized scope does not block dispatch:
+name that investigation and its owner. Record known decision-relevant unknowns, not
+an impossible inventory of everything unknown. `None identified` is not proof that
+no uncertainty exists.
+
+Frozen context is the sourced starting state, not a claim that facts never change.
+Goal records discoveries, resolutions and new questions in Execution and Current
+Evidence, referring to the initial items; contradictions affecting the contract return
+to Outer under the existing change rule. Do not silently rewrite the starting context.
+
+Keep required outcome invariants in Acceptance/Constraints and their proof methods
+in Execution. For example, preserving public CLI compatibility can be a sourced
+constraint; choosing which helper to rewrite is a method. Authoritative context can
+reference that constraint or a confirmed decision rather than repeat its text.
+Fill-in structure helps expose omissions; it is not a semantic validator or another
+approval stage. Outer still checks meaning before dispatch and evidence at review.
+
 ## Required Given / When / Then structure
 
 Every acceptance item must state these fields in order, including artifact, invariant
