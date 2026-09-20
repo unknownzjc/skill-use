@@ -29,17 +29,19 @@ pane, fill its four sections below; the draft is not a dispatchable contract. Th
 the sole Goal Package: dispatch its returned absolute path and a short instruction.
 
 Read [acceptance guidance](references/acceptance.md) before freezing or reviewing the
-contract. Give each task-specific outcome a stable A ID, relevant conditions, expected
-result and minimum proof boundary/decision rule. Behavior, artifact and invariant
-forms are valid; Given–When–Then is useful, not mandatory syntax. Put applicable
+contract. Every acceptance item must have a stable A ID and explicit Given / When /
+Then fields: preconditions, action or event, and observable expected result. This
+structure is mandatory for behavior, artifact and invariant outcomes alike. Record
+the minimum proof boundary/decision rule separately as Required proof. Put applicable
 common quality gates under Constraints / Required Gates with G IDs; gate success
 cannot substitute for an outcome. Classify by what is checked, not the tool or whether
 a person or program judges it; engineering capabilities can themselves be deliverables.
-Resolve unclear outcomes or missing credible verification paths before dispatch.
-For critical objective behavior with reachable execution, require executable acceptance
-in the existing test stack; map A IDs to scenarios/tests, bindings and actual results.
-Gherkin is optional, and a feature file or zero-exit suite without the required scenario
-running is not proof. Preserve the frozen expected result when adapting tests.
+Resolve incomplete Given / When / Then items, unclear outcomes or missing credible
+verification paths before dispatch. For critical objective behavior with reachable
+execution, require executable acceptance in the existing test stack; map A IDs to
+scenarios/tests, assertions and actual results. A written scenario or zero-exit suite
+without the required case running is not proof. Preserve the frozen Given / When /
+Then meaning when adapting tests.
 
 - Frozen Task: goal, run identity, cwd, acceptance criteria, constraints/required gates,
   non-goals, shared context, frozen decisions, unknowns, artifacts and absolute helper script path. Peer
@@ -214,9 +216,10 @@ all frozen acceptance, required gates, constraints and regression risks, not onl
 supplied examples. Reports are not proof. Goal owns full verification; Outer reruns
 the smallest checks needed for important risks. Check every required A/G evidence row:
 PASS requires sufficient current proof at the required boundaries and compliance with
-constraints. Inspect changed expectations, assertions, snapshots, step bindings and
-skip/filter configuration; do not accept weaker tests as a repair. Distinguish observed
-violations from proof gaps and contract defects.
+constraints. Check each A item against its Given / When / Then; inspect changed
+expectations, assertions, snapshots, test code and skip/filter configuration; do not
+accept weaker tests as a repair. Distinguish observed violations from proof gaps and
+contract defects.
 Record PASS only when satisfied; missing, invalid or stale proof cannot count. Otherwise
 write the complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
 From the first rejection, identify any shared invariant exposed by related failures

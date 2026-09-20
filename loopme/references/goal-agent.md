@@ -21,15 +21,19 @@ here. Use `run --fingerprint` for relevant source/build files, including dirty/u
 inputs. Scripts capture execution and assertion identity, not business correctness;
 you still own the scenario, expected assertion and required real-surface verification.
 Use [acceptance guidance](acceptance.md) to interpret proof requirements, not to add
-scope. Preserve frozen A/G IDs and keep a Current Evidence row for each required
-outcome and gate, with observed result, evidence references and tested boundary/version.
+scope. Every A item requires explicit Given / When / Then fields; preserve their
+frozen preconditions, action/event and observable expected result. Report an incomplete
+item as a contract gap to Outer rather than inventing or weakening its meaning.
+Preserve frozen A/G IDs and keep a Current Evidence row for each required outcome and
+gate, with observed result, evidence references and tested boundary/version.
 Gate success cannot replace an outcome. Private checker fixture success alone does
 not prove that the product's real entry path was exercised; link real-entry evidence
 when required. For critical objective behavior with reachable execution, implement
-and run acceptance in the existing test stack; link A ID -> scenario/test -> binding
--> actual result. A `.feature` file alone, skipped scenario or unrelated green suite
-is not completion. Derive expectations from the frozen contract, not current output;
-record changes to assertions, snapshots and test selection without weakening meaning.
+and run acceptance in the existing test stack; link A ID -> scenario/test -> assertion
+-> actual result. A written Given / When / Then scenario alone, skipped case or
+unrelated green suite is not completion. Derive expectations from the frozen contract,
+not current output; record changes to assertions, snapshots and test selection without
+weakening meaning.
 Keep reusable behavior tests in the target project; task.md references them rather
 than duplicating their contents. This does not authorize a second task/status record.
 Missing or invalid proof stays unverified; affected prior proof needs recheck. Do not

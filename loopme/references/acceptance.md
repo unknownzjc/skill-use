@@ -9,11 +9,12 @@ are writing aids, not additional requirements for an already-frozen task.
 ## Make the contract ready before dispatch
 
 Acceptance describes task-specific results that can be accepted or rejected against
-stated criteria. Give each required outcome a stable ID such as A1, relevant context,
-an expected result, and a credible verification path: minimum boundary, decision rule
-and evidence to retain. Automate objective checks when practical; reserve judgment
-for what cannot be adequately decided that way and state its criteria. A human can
-review automated evidence; an automated business assertion can establish acceptance.
+stated criteria. Give each required outcome a stable ID such as A1 and explicit
+Given / When / Then fields. Record a credible verification path separately as Required
+proof: minimum boundary, decision rule and evidence to retain. Automate objective
+checks when practical; reserve judgment for what cannot be adequately decided that
+way and state its criteria. A human can review automated evidence; an automated
+business assertion can establish acceptance.
 
 Common quality gates (G1, G2, ...) belong under Constraints / Required Gates, not in
 place of task outcomes. Record their applicability, expected result and any agreed
@@ -22,24 +23,35 @@ and applicable gates matter to PASS. Classify by the subject, not the command na
 "all tests/lint/tsc pass" is normally a gate, but a type-declaration repair can require
 that a concrete downstream consumer compiles and an invalid call is rejected.
 
-Before dispatch, fix vague outcomes, pure-gate substitutes and missing credible proof
-paths. Freeze the expected result and minimum proof requirements, not every command
-or fixture path. Goal may refine methods without weakening the required boundary or
+Before dispatch, fix missing Given / When / Then fields, vague outcomes, pure-gate
+substitutes and missing credible proof paths. Freeze the Given / When / Then meaning
+and minimum proof requirements, not every command or fixture path. Goal may refine methods without weakening the required boundary or
 changing the result. A later contract correction is Outer-owned: record the delta and
 reason, retain prior history, invalidate affected evidence, and respect user authority
 over scope or risk acceptance. It does not reset review/attempt counts or retroactively
 turn a newly added requirement into an implementation defect.
 
-## Choose the form that fits the result
+## Required Given / When / Then structure
 
-Require clear semantics, not one mandatory sentence format. Add a concrete example
-when it resolves ambiguity; examples illustrate the rule rather than exhaust its scope.
+Every acceptance item must state these fields in order, including artifact, invariant
+and metric outcomes. Use plain text in the task contract:
 
-| Form | Example of a task-specific outcome | Required proof |
-| --- | --- | --- |
-| Behavior (Given / When / Then) | Given a fixed dataset whose filtered IDs are r1 and r3, when the user exports through the real export entry, then the CSV is parseable and contains exactly those two records, with no duplicate IDs. | Actual exported file plus parsed record comparison at that entry. |
-| Artifact | The risk note names unverified platforms, their affected behavior, completed checks and reproduction steps, consistent with the delivered diff. | Document path/version and Outer inspection against those content criteria and the actual diff; existence alone is insufficient. |
-| Invariant or metric | During a controlled cancellation-before-completion schedule, no result is published after cancellation is acknowledged. | Event order and correlated observations at the public boundary, including the dangerous interleaving; a helper-only result cannot prove that boundary. |
+- **Given:** the preconditions, input and relevant starting state.
+- **When:** the action, event or review operation under those conditions.
+- **Then:** the observable behavior or inspectable artifact result that decides acceptance.
+
+Keep **Required proof** separate: it names how and at what boundary to establish the
+Then result. A command or evidence path does not replace the expected result. The
+structure is mandatory even when verification uses inspection rather than execution;
+clear wording and a discriminating result still matter beyond the field labels.
+Add concrete inputs/results where they resolve ambiguity; examples illustrate the
+rule rather than exhaust its scope.
+
+| Outcome | Given | When | Then | Required proof |
+| --- | --- | --- | --- | --- |
+| Behavior | A fixed dataset whose filtered IDs are r1 and r3. | The user exports through the real export entry. | The CSV is parseable and contains exactly r1 and r3, with no duplicate IDs. | Actual exported file plus parsed record comparison at that entry. |
+| Artifact | The delivered diff and current verification record are available. | Outer compares the risk note against those records. | The note names unverified platforms, affected behavior, completed checks and reproduction steps consistently with those records. | Document path/version and content findings; existence alone is insufficient. |
+| Invariant | A request is in flight and its completion can be delayed. | Cancellation is acknowledged before the delayed completion is delivered. | No result is published after the cancellation acknowledgment. | Controlled event order and correlated observations at the public boundary; helper-only evidence does not prove that boundary. |
 
 For performance metrics, also freeze the workload, environment, measurement window
 and threshold. Do not substitute an adjective such as "fast" or "robust". Split
@@ -50,16 +62,16 @@ coherent result together.
 
 For critical, objective behavior whose execution boundary is reachable, require an
 executable acceptance check before readiness, using the project's existing test stack.
-Use existing Gherkin/step definitions when present; do not install Cucumber or require
-`.feature` files merely for uniform formatting. Artifact judgment remains valid where
-execution cannot adequately decide the result. Record infeasibility and the remaining
-proof gap rather than calling a written scenario executed or adding an approval gate.
+Express the contract in Given / When / Then and implement its checks with available
+project tools. Artifact judgment remains valid where execution cannot adequately
+decide the result. Record infeasibility and the remaining proof gap rather than calling
+a written scenario executed or adding an approval gate.
 
 Keep four responsibilities explicit:
 
-- **Execution coverage:** map A ID -> named scenario/test -> binding/assertion code ->
+- **Execution coverage:** map A ID -> named scenario/test -> assertion code ->
   actual run result and observed artifact. Confirm the required case ran and passed;
-  zero selected cases, skipped/pending/undefined steps and unrelated smoke tests do
+  zero selected cases, skipped or unimplemented checks and unrelated smoke tests do
   not establish it, even when the overall command exits zero.
 - **Expected-result authority:** derive expected values from the frozen requirement,
   not by copying the implementation's current output. Outer inspects changes to the
@@ -67,34 +79,19 @@ Keep four responsibilities explicit:
   corrections follow the existing contract-change rule; equivalent refactoring of
   test code is allowed. Do not freeze test implementation merely to protect meaning.
 - **Discriminating assertions:** apply the positive/violation checks below to critical
-  bindings and private checkers. Logging success or computing a boolean that the
+  test assertions and private checkers. Logging success or computing a boolean that the
   runner ignores is not an assertion. Use canonical observations derived independently
   of the candidate oracle; a checker and fixtures rewritten to agree can both be wrong.
 - **Required boundary:** bind the behavior to its frozen entry/build requirement.
   Helper-only success and checker-only fixture success remain local evidence, not
   proof that the public entry actually produced the required artifact.
 
-For example, an export requirement should distinguish all filtered rows from the
-current page, rather than merely say that an export button works:
+The worked example below distinguishes all filtered rows from the current page.
+Execute its actual export operation and compare the parsed output, not only request
+arguments or a success log. Writing Given / When / Then states the requirement;
+performing the check and recording its observations supplies evidence.
 
-```gherkin
-@A1
-Feature: Export filtered records
-  Scenario: Export spans pages
-    Given the filtered record IDs are r1, r3 and r5
-    And the current page displays only r1 and r3
-    When the user exports all filtered records
-    Then the CSV is parseable and its record IDs are exactly r1, r3 and r5
-    And each ID occurs exactly once
-```
-
-Bind this to the actual export operation and compare the parsed output, not only
-request arguments or a success log. Native tests with the same semantics are equally
-valid. A `.feature` is readable specification; binding it and recording execution is
-what supplies evidence. See the [Gherkin reference](https://cucumber.io/docs/gherkin/reference/)
-and [step result semantics](https://cucumber.io/docs/cucumber/api/#step-results).
-
-Keep reusable scenarios/bindings or native regression tests in the target project,
+Keep reusable behavior/regression tests in the target project,
 maintained alongside approved behavior changes. The private task.md is the current
 run's coordination/evidence record, not a second copy of that regression specification.
 The one-task-file rule forbids companion status records, not legitimate test artifacts.
@@ -154,8 +151,9 @@ not to LoopMe itself.
 ## Acceptance
 
 A1 — Export exactly the filtered records.
-Context: The fixed dataset's filter selects IDs r1 and r3; use the actual export entry.
-Expected: Parseable CSV with exactly two data records, IDs r1 and r3, no duplicates.
+Given: The filter selects IDs r1, r3 and r5; the current page displays only r1 and r3.
+When: The user exports all filtered records through the actual export entry.
+Then: The CSV is parseable and contains exactly r1, r3 and r5, each occurring once.
 Required proof: Actual exported file and parsed comparison against the delivered build.
 
 ## Constraints / Required Gates
@@ -168,7 +166,7 @@ Baseline allowances: none.
 P1 -> A1: Reproduce the omitted row on the old build. Export through the real entry
 on the corrected build; retain the CSV and compare IDs/counts. Record the build/inputs.
 P2 -> A1: If a private checker is used, the correct CSV is accepted; a parseable CSV
-missing r3 is rejected with assertion missing_record, not a parser/setup error.
+missing r5 is rejected with assertion missing_record, not a parser/setup error.
 G1: Capture the regression-suite command and result separately from the A1 proof.
 
 # Current Evidence
@@ -194,20 +192,21 @@ gap blocks PASS but does not by itself prove the implementation wrong.
 
 | Bad acceptance or evidence claim | Why it is weak | Rewrite |
 | --- | --- | --- |
-| Error handling is robust. | No condition or observable result. | For the named dependency failure, the public entry returns the agreed error and leaves no partial output. |
+| Error handling is robust. | No condition or observable result. | Given the named dependency is unavailable, When the public operation is invoked, Then it returns the agreed error and leaves no partial output. |
 | Lint, tests and build are green. | Common gates replace the requested result. | Record these as applicable G items; define the task behavior separately. For a build/type-tool task, name the concrete consumer behavior being delivered. |
-| Add a retry helper and call it. | An implementation step is not the result. | The specified transient failure retries according to the policy; the specified permanent failure does not retry. |
+| Add a retry helper and call it. | An implementation step is not the result. | Given the specified transient failure, When the operation runs, Then it retries according to the frozen policy. Add a separate permanent-failure scenario whose Then requires no retry. |
 | The mock export is correct, so export works. | The claimed boundary exceeds the evidence. | Retain the real-entry export and compare its records; label mock evidence as local only. |
 | The negative command failed, so rejection works. | A crash may precede the target condition. | Show that the well-formed violation reached the assertion and was rejected for that exact semantic reason. |
-| The risk document exists. | Presence is not content adequacy. | Inspect its required risks, affected scope and reproduction steps against the actual diff and evidence. |
-| The feature file exists and the suite is green. | The required scenario may be unbound, skipped or excluded. | Link its A ID, binding and actual passed result; inspect the test selection. |
+| The risk document exists. | Presence is not content adequacy. | Given the actual diff and verification record, When Outer compares the risk note against them, Then its risks, affected scope and reproduction steps are complete and consistent with those records. |
+| The Given / When / Then scenario is written and the suite is green. | The required check may be unimplemented, skipped or excluded. | Link its A ID, assertion and actual passed result; inspect the test selection. |
 | Regenerate expected output until the test passes. | Implementation and oracle can drift together away from the contract. | Restore the frozen expectation or obtain an explicit contract correction; challenge the checker with independent valid and violating observations. |
 | A screenshot proves the entire workflow. | A still image does not show all interactions or persistence. | Name the visible state it proves and add interaction/persistence observations for the remaining claims. |
 | The old build passed and fingerprints did not change. | The selected files may omit the edited input or delivered artifact. | Identify the tested source/build, include relevant dirty inputs, and rerun affected proof on the delivered result. |
 
 ## Outer review checklist
 
-Before PASS, independently check that each required A/G ID has sufficient current
+Before PASS, check each A item's Given / When / Then against the observed conditions,
+action and result. Independently check that each required A/G ID has sufficient current
 evidence at its required boundary, the observations meet the decision rule, and
 constraints are satisfied. Gate success does not cover a missing outcome, and outcome
 success does not waive an applicable gate. Inspect critical failure reasons and checker

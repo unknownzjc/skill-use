@@ -142,7 +142,7 @@ test('init rejects invalid prerequisites without creating a run, then creates pr
   }
 });
 
-test('init scaffolds acceptance, gates and per-item evidence without declaring readiness', async t => {
+test('init scaffolds required Given-When-Then acceptance, gates and evidence without declaring readiness', async t => {
   const { dir, invoke } = await workspace(t);
   const root = path.join(dir, 'drafts with spaces');
   await fs.mkdir(root);
@@ -163,9 +163,13 @@ test('init scaffolds acceptance, gates and per-item evidence without declaring r
   assert.ok(frozen.includes(`Working directory: ${dir}\n`));
   assert.match(frozen, /^## Acceptance$/m);
   assert.match(frozen, /^A1 — /m);
-  for (const field of ['Context', 'Expected', 'Required proof']) {
-    assert.ok(frozen.includes(`\n${field}: `), `missing acceptance field: ${field}`);
+  const acceptance = frozen.split('## Acceptance\n')[1].split('## Constraints / Required Gates\n')[0];
+  const fields = ['Given', 'When', 'Then', 'Required proof'];
+  for (const field of fields) {
+    assert.match(acceptance, new RegExp(`^${field}: <[^>]+>$`, 'm'), `missing acceptance field: ${field}`);
   }
+  assert.deepEqual(acceptance.split('\n').filter(line => /^[A-Za-z ]+:/.test(line))
+    .map(line => line.slice(0, line.indexOf(':'))), fields, 'acceptance fields must be ordered and unambiguous');
   assert.match(frozen, /^## Constraints \/ Required Gates$/m);
   assert.match(frozen, /^G1 — /m);
   assert.match(plan, /^P1 -> A1:/m);
