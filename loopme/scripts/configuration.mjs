@@ -251,11 +251,13 @@ export async function initialize(configPath = undefined, { herdr = 'herdr', root
     + `Run identity: ${runId}\nWorking directory: ${process.cwd()}\n`
     + `Helper script: ${path.join(SKILL_ROOT, 'scripts', 'loopme.mjs')}\n`
     + `Acceptance guide: ${path.join(SKILL_ROOT, 'references', 'acceptance.md')}\n\n`
-    + 'Use the guide before freezing. Replace placeholders and add/remove A/G items and evidence rows to match the task.\n\n'
+    + 'Use the guide before freezing. Every A item must use Given / When / Then, with Required proof recorded separately.\n'
+    + 'Replace placeholders and add/remove A/G items and evidence rows to match the task.\n\n'
     + '## Acceptance\n\n'
     + 'A1 — <task-specific, adjudicable outcome>\n'
-    + 'Context: <conditions and action, artifact, or invariant scope>\n'
-    + 'Expected: <observable result; include a concrete example when useful>\n'
+    + 'Given: <preconditions, input and relevant state>\n'
+    + 'When: <action, event or artifact review under those conditions>\n'
+    + 'Then: <observable result with a clear pass/fail criterion>\n'
     + 'Required proof: <minimum boundary, decision rule, and evidence to retain>\n\n'
     + '## Constraints / Required Gates\n\n'
     + 'Constraints: <limits that must remain satisfied>\n'
