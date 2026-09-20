@@ -20,6 +20,20 @@ acceptance-checker positive/negative fixtures via `check`; record their evidence
 here. Use `run --fingerprint` for relevant source/build files, including dirty/untracked
 inputs. Scripts capture execution and assertion identity, not business correctness;
 you still own the scenario, expected assertion and required real-surface verification.
+Use [acceptance guidance](acceptance.md) to interpret proof requirements, not to add
+scope. Preserve frozen A/G IDs and keep a Current Evidence row for each required
+outcome and gate, with observed result, evidence references and tested boundary/version.
+Gate success cannot replace an outcome. Private checker fixture success alone does
+not prove that the product's real entry path was exercised; link real-entry evidence
+when required. For critical objective behavior with reachable execution, implement
+and run acceptance in the existing test stack; link A ID -> scenario/test -> binding
+-> actual result. A `.feature` file alone, skipped scenario or unrelated green suite
+is not completion. Derive expectations from the frozen contract, not current output;
+record changes to assertions, snapshots and test selection without weakening meaning.
+Keep reusable behavior tests in the target project; task.md references them rather
+than duplicating their contents. This does not authorize a second task/status record.
+Missing or invalid proof stays unverified; affected prior proof needs recheck. Do not
+mark an item verified or silently waive it because a command ran or a file exists.
 
 Do not edit the frozen contract or Outer Review, or create a second task record.
 Peers return evidence to you; only you write during execution. Stop writing
@@ -196,8 +210,9 @@ conflict instead of silently widening the goal.
 
 ## Completion
 
-When all required acceptance items have current verification evidence in the
-task file, report its path and:
+When all required acceptance items and applicable gates have sufficient current
+verification evidence in the task file, and constraints are satisfied, report its
+path and:
 
 `READY_FOR_OUTER_REVIEW`
 
