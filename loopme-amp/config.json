@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "runtime": "amp",
+  "goal": {
+    "modes": ["deepseek-v4.1-flash","glm-5.3","kimi-k3"],
+    "executor": "local",
+    "worktree": false
+  },
+  "limits": {
+    "max_goal_attempts": 2,
+    "max_review_rounds": 3
+  },
+  "fallback": {
+    "strategy": "ordered",
+    "recovery_prompts": 1,
+    "switch_on": [
+      "startup_failure",
+      "prompt_delivery_failure",
+      "process_exit",
+      "provider_or_model_error",
+      "wait_failure_without_observed_progress",
+      "missing_terminal_marker_after_recovery"
+    ],
+    "do_not_switch_on": [
+      "approval_or_user_input_blocked",
+      "semantic_terminal_marker",
+      "implementation_or_test_failure",
+      "outer_review_reject",
+      "context_expansion_request"
+    ]
+  }
+}
