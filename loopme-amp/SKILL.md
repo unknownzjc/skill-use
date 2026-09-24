@@ -115,6 +115,9 @@ Dispatch with one `create_thread` call:
 - `worktree` — the run ID when config requests a new worktree per Goal; requires a runner
   executor. Otherwise the Goal works in the served directory.
 - `working_directory` — the served directory, for runner executors only.
+- `archive_when_done` — never set it. A self-archiving Goal would cut off the review loop:
+  it must stay reachable for REJECT batches, revision and inspection. The Outer archives it
+  at termination instead.
 
 Dispatch immediately after the contract is frozen and the task path exists. Do not
 pre-brief, poll or steer a working Goal; no incremental diff review, no monitoring, no
@@ -202,7 +205,10 @@ PASS, report `REVIEW_LIMIT_REACHED` with findings by round, repeated and new iss
 suspected design or requirement problems, current evidence and options to redesign,
 narrow scope, accept the stated risk or stop. No new revision without a user decision.
 
-On PASS, or on a terminal block, exhaustion or limit, archive the Goal thread and report
-the task path and evidence paths. If the Goal became unavailable, one `find_thread` query
-may locate threads from this run for cleanup; never archive unrelated threads, and never
-delete the working tree or worktree unless the user asks.
+On PASS, or on a terminal block, exhaustion or limit, termination includes archiving the
+Goal thread: do it without asking, and never leave a finished or retired Goal in the thread
+list. Report the task path and evidence paths — the task file, not the thread, is the
+durable record. If the Goal became unavailable, one `find_thread` query may locate threads
+from this run for cleanup; never archive unrelated threads, and never delete the working
+tree or worktree unless the user asks. Leave the Outer thread alone: it is the user's own
+conversation, and the user archives it if they want to.
