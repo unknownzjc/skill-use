@@ -195,8 +195,17 @@ evidence practical and retain the supported mechanism in Execution. If a specula
 change does not advance an acceptance/gate predicate, diagnostic hypothesis or required
 intermediate invariant, remove it before handoff.
 
-Verify a settled slice before activating the next one. The slice checkpoint is development
-feedback, not a substitute for final proof at the frozen required boundary.
+Within the active slice, use short feedback cycles for one behavior or hypothesis at a
+time: run the cheapest valid discriminating check, make the smallest justified change,
+observe the result, and use that observation to choose the next step. Do not wait until
+the entire slice is implemented to obtain feedback. These inner checks may use a focused
+seam or mechanism experiment; they do not each need full real-environment acceptance.
+Verify the settled slice against its named proof subset before activating the next one,
+and reserve the frozen Required proof for the boundary where the contract requires it.
+
+A non-user-visible prerequisite is allowed when it names the slice(s) that benefit, the
+invariant/capability it establishes and a check that can falsify it. Do not disguise a
+broad speculative refactor as a prerequisite.
 
 ## Map each outcome to evidence
 
@@ -309,13 +318,19 @@ Before Goal returns `READY_FOR_OUTER_REVIEW`, it performs an adversarial preflig
 records the result in Execution and Verification. The preflight must check that every
 required A/G item has sufficient current evidence, no helper/mock result is standing in
 for required real-boundary proof, critical negative cases fail for the intended semantic
-reason, and no speculative/unused change, unexplained legacy path, duplicate state source
-or hidden design concern remains. A known gap produces BLOCKED/STALLED or continued work,
-not READY.
+reason, and the changes introduced, modified or directly relied on by this task contain
+no unsupported speculative branch, duplicate state source, compatibility shim or hidden
+in-scope design concern. Pre-existing out-of-scope issues are risks, not cleanup
+obligations; they block READY only when they violate the frozen contract, required proof
+boundary or create a regression in this task. Any blocking gap produces BLOCKED/STALLED
+or continued work, not READY.
 
 Outer should make rejection easy to repair rather than maximize finding count. Cluster
-related symptoms under the root cause they demonstrate, name the implicated A/G IDs and
-required outcome, then classify the revision batch:
+findings only when evidence supports a shared cause. If causality is not established,
+preserve the independent counterexamples and label the proposed common cause as a
+hypothesis together with the evidence needed to discriminate it. For established or
+explicitly hypothetical clusters, name the implicated A/G IDs and required outcome, then
+classify the revision batch:
 
 - **REPAIR** — the current model and execution slicing remain sound; local implementation
   or evidence corrections should converge.
@@ -324,9 +339,11 @@ required outcome, then classify the revision batch:
 
 A REPLAN requires Goal to revise its model/checkpoint and slices before more implementation.
 If the same underlying root cause survives one completed revision, require a premise audit
-before another patch: state the shared assumption, evidence for and against it, and the
-revised model or slicing decision. Do not consume another review round on an equivalent
-patch merely because it changes different lines.
+before another patch. The audit must state the shared assumption; supporting and
+contradicting observations; the existing evidence or smallest experiment that can
+discriminate competing explanations; and how each possible result changes the next
+implementation step. Do not consume another review round on an equivalent patch merely
+because it changes different lines or restates the same hypothesis.
 
 ## Outer review checklist
 
