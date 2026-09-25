@@ -54,19 +54,27 @@ Then meaning when adapting tests.
   absolute role path, startup and session-recovery instructions. Peer use is optional;
   these instructions are not.
 - Execution and Verification: before dispatch, use known failure evidence and relevant
-  code boundaries to identify key invariants, dangerous states/event orders, and ways
-  evidence could falsely pass. Turn these into a few task-specific proof obligations,
-  not an implementation prescription or exhaustive test matrix. Supply a minimal
-  executable counterexample where risk is high and setup cheap; otherwise specify
-  the scenario and expected result. For bugs, require a failing minimal reproduction.
-  Before broad implementation/caller migration, Goal challenges the chosen high-risk
-  mechanism with its strongest known counterexample at the actual boundary; failure
-  means revise the mechanism, not expand it. Record invariant, experiment, expected/
-  observed failure reason, and tested surface in task.md. Each critical check must
-  accept valid success and reject a well-formed violation for the intended reason.
-  Helper/mocked proof does not cover production launch options or another platform:
-  verify the real entry path and final build; label unavailable native proof separately.
-  Finish reachable work without claiming that missing proof; no extra approval gate.
+  code boundaries to identify key invariants, dangerous states/event orders, likely
+  failure surfaces and ways evidence could falsely pass. Turn these into a few
+  task-specific proof obligations and evidence traps, not an implementation prescription
+  or exhaustive test matrix. Goal owns execution slicing: if the task is not already one
+  independently verifiable end-to-end unit, derive behavior-oriented slices mapped to
+  A/G IDs, keep exactly one implementation slice active, and record its engineering
+  checkpoint (invariant, relevant state/data shape, current evidence/hypothesis, smallest
+  justified next change and expected observable delta). Supply a minimal executable
+  counterexample where risk is high and setup cheap; otherwise specify the scenario and
+  expected result. For bugs, require a failing minimal reproduction and supported failure
+  mechanism before treating a patch as the fix. Before broad implementation/caller
+  migration, Goal challenges the chosen high-risk mechanism with its strongest known
+  counterexample at the actual boundary; failure means revise the mechanism, not expand
+  it. Record invariant, experiment, expected/observed failure reason, and tested surface
+  in task.md. Each critical check must accept valid success and reject a well-formed
+  violation for the intended reason. Helper/mocked proof does not cover production launch
+  options or another platform: verify the real entry path and final build; label
+  unavailable native proof separately. Before READY, Goal records an adversarial preflight
+  covering current A/G evidence, real-boundary proof, negative-case semantics,
+  speculative/legacy state and unresolved design assumptions. Finish reachable work
+  without claiming missing proof; no extra approval gate.
 - Current Evidence: initially unverified; map every required A/G ID to status
   (unverified, failed, needs recheck, verified), commands/results, evidence references,
   tested boundary and source/build, including uncommitted changes. One item may need
@@ -235,10 +243,22 @@ expectations, assertions, snapshots, test code and skip/filter configuration; do
 accept weaker tests as a repair. Distinguish observed violations from proof gaps and
 contract defects.
 Record PASS only when satisfied; missing, invalid or stale proof cannot count. Otherwise
-write the complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
-From the first rejection, identify any shared invariant exposed by related failures
-and require controlled proof across the implicated states/orders before expanding the
-repair or expensive verification—not equivalent local patches or an unrelated redesign.
+write one complete evidence-backed REJECT batch in task.md. Compress related symptoms
+under the repairable root cause they expose instead of returning a flat finding list;
+record the failure, evidence, implicated A/G IDs and required outcome.
+
+Classify the batch as **REPAIR** when the current model and execution slicing remain sound
+and local implementation/evidence corrections should converge. Classify it as **REPLAN**
+when a data/ownership/API shape, task decomposition or shared premise is wrong enough that
+symptom-by-symptom patching is likely to repeat the defect. A REPLAN requires Goal to
+revise its model/checkpoint and execution slices before further implementation.
+From the first rejection, identify any shared invariant exposed by related failures and
+require controlled proof across the implicated states/orders before expanding the repair
+or expensive verification. If the same underlying root cause survives one completed
+revision, require a premise audit before another patch: name the shared assumption,
+evidence for/against it and the materially different model or slicing decision. Do not
+spend another review round on an equivalent patch.
+
 Return one complete batch only while below the review limit, then wait without steering.
 At max_review_rounds without PASS, report REVIEW_LIMIT_REACHED with findings by round,
 repeated/new issues, suspected design/requirement problem, current evidence and options
