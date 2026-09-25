@@ -24,6 +24,16 @@ and re-read it after any context loss.
   predicate and proof subset. Do not split by frontend/backend/test layers. Keep exactly
   one slice active; later slices may be investigated but not bulk-implemented ahead of
   the current checkpoint.
+- An execution slice is a narrow behavior-level outcome, not the smallest edit. Within
+  the active slice, use short feedback cycles: choose one behavior or hypothesis, run the
+  cheapest valid discriminating check, make the smallest justified change, observe the
+  result, and let that result determine the next step. Do not batch many edits until the
+  slice-end check. Inner feedback may use a focused seam or experiment; the slice
+  checkpoint and final handoff still need the proof subset / frozen Required proof at
+  their stated boundaries.
+- A prerequisite that is not itself user-visible is allowed when it names the slice(s)
+  it enables, the invariant/capability it establishes, and a check that can falsify it.
+  Do not create speculative foundational work without a named consumer and observation.
 - Before editing the active slice, record a concise engineering checkpoint: invariant,
   relevant state/data shape, current evidence or hypothesis, why the next change is the
   smallest justified move, and the observable delta expected from it. For a trivial local
@@ -72,12 +82,32 @@ self-review file.
 - Real-boundary proof has not been substituted with helper/mock evidence.
 - Critical counterexamples and negative cases fail for the intended semantic reason.
 - No speculative, redundant or unused change remains merely because it "might help."
-- No known legacy path, duplicate state source or compatibility shim remains without a
-  frozen requirement for it.
-- No unresolved design concern, assumption or proof substitution is being hidden by a
-  green suite. If the same underlying failure survived a completed revision, perform a
-  premise audit before another patch: name the shared assumption, evidence for/against it,
-  and the revised model or slicing decision.
+- No speculative compatibility branch, duplicate state source or legacy path introduced,
+  modified, or directly relied on by this task remains without contract/evidence support.
+  Pre-existing out-of-scope issues are risks, not cleanup obligations; do not modify or
+  block READY on them unless they violate the frozen contract, required proof boundary,
+  or create a regression in this task.
+- No unresolved in-scope design concern, assumption or proof substitution is being hidden
+  by a green suite. If the same underlying failure survived a completed revision, perform
+  a premise audit before another patch: name the shared assumption; supporting and
+  contradicting observations; the existing evidence or smallest experiment that can
+  discriminate competing explanations; and how each possible observation changes the
+  next implementation step. Do not repeat an equivalent patch without new discriminating
+  evidence.
+
+## Review Feedback
+
+When Outer records a revision batch in task.md, treat its classification as execution
+input without changing the frozen contract.
+
+- **REPAIR** — keep the current engineering model and execution slices. Fix the
+  evidence-supported common cause, then re-prove the affected invariants and boundaries.
+- **REPLAN** — do not patch symptoms one by one. Before further implementation, record
+  the failed design premise or shape and the revised model, engineering checkpoint and
+  execution slices; then obtain the discriminating evidence required by the revision.
+- If review feedback changes or contradicts frozen Given / When / Then, scope,
+  constraints, decisions or Required proof, return it to Outer as a contract issue
+  instead of silently widening the task.
 
 ## Handoff
 
