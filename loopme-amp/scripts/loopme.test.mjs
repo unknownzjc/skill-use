@@ -257,3 +257,14 @@ test('init scaffolds scoped context, decisions, deliverables and the ownership/s
   assert.equal(result.dispatched, false);
   assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
 });
+test('Amp Goal brief carries revision, scoped preflight and evidence-driven feedback rules', async () => {
+  const brief = await fs.readFile(fileURLToPath(new URL('../references/goal-brief.md', import.meta.url)), 'utf8');
+  const acceptance = await fs.readFile(fileURLToPath(new URL('../references/acceptance.md', import.meta.url)), 'utf8');
+  assert.match(brief, /^## Review Feedback$/m);
+  assert.match(brief, /\*\*REPAIR\*\*/);
+  assert.match(brief, /\*\*REPLAN\*\*/);
+  assert.match(brief, /Pre-existing out-of-scope issues are risks, not cleanup obligations/);
+  assert.match(brief, /smallest experiment that can\s+discriminate competing explanations/);
+  assert.match(acceptance, /Cluster\s+findings only when evidence supports a shared cause/);
+  assert.match(acceptance, /Within the active slice, use short feedback cycles/);
+});
