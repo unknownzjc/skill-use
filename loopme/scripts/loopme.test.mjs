@@ -242,3 +242,14 @@ test('init scaffolds scoped context, decisions, deliverables and Peer Runtime wi
   assert.equal(result.dispatched, false);
   assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
 });
+test('Herdr Goal protocol binds writers to the active slice and keeps review evidence-driven', async () => {
+  const goal = await fs.readFile(fileURLToPath(new URL('../references/goal-agent.md', import.meta.url)), 'utf8');
+  const acceptance = await fs.readFile(fileURLToPath(new URL('../references/acceptance.md', import.meta.url)), 'utf8');
+  assert.match(goal, /writing Peer assignment is ready only when it belongs to the current active\s+slice/);
+  assert.match(goal, /Later slices may receive read-only investigation/);
+  assert.match(goal, /Active slice: the current U#/);
+  assert.match(goal, /Pre-existing\s+out-of-scope issues are risks, not cleanup obligations/);
+  assert.match(goal, /smallest experiment that can\s+discriminate competing explanations/);
+  assert.match(acceptance, /Cluster\s+findings only when evidence supports a shared cause/);
+  assert.match(acceptance, /Within the active slice, use short feedback cycles/);
+});
