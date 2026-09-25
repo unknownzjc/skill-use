@@ -168,6 +168,36 @@ The one-task-file rule forbids companion status records, not legitimate test art
 None of this makes LoopMe a non-bypassable acceptance gate: its helpers record evidence;
 Outer still judges coverage, meaning and sufficiency.
 
+## Execution slicing and engineering checkpoints
+
+A frozen task is not automatically one implementation batch. Before broad implementation,
+Goal decides whether the task is already one independently verifiable end-to-end slice.
+If not, derive a small ordered set of behavior-oriented execution slices in Execution and
+Verification. Each slice names the A/G IDs it advances, an observable done predicate and
+the proof subset that can be checked when the slice settles. Do not decompose by technical
+layers such as "backend", "frontend" and "tests"; a slice should cross the necessary
+layers to establish one narrow result. Keep exactly one implementation slice active so
+feedback stays attributable. Investigation for later slices is allowed when it resolves a
+named dependency, but do not bulk-implement later behavior ahead of the active checkpoint.
+
+Before editing an active slice, record a concise engineering checkpoint in task.md:
+
+- the invariant the slice must preserve or establish,
+- the relevant state/data shape and ownership when they matter,
+- the current observation, reproduction or falsifiable hypothesis,
+- why the next change is the smallest move justified by that evidence,
+- the observable delta expected if the move is correct.
+
+This is not another approval stage or a design document. A trivial local change can say
+that no new model is warranted. For a bug, a green patch is not enough when the failure
+mechanism is still guessed: eliminate competing causes with the cheapest discriminating
+evidence practical and retain the supported mechanism in Execution. If a speculative
+change does not advance an acceptance/gate predicate, diagnostic hypothesis or required
+intermediate invariant, remove it before handoff.
+
+Verify a settled slice before activating the next one. The slice checkpoint is development
+feedback, not a substitute for final proof at the frozen required boundary.
+
 ## Map each outcome to evidence
 
 In Frozen Task, define what would establish the result. In Execution and Verification,
@@ -272,6 +302,31 @@ gap blocks PASS but does not by itself prove the implementation wrong.
 | Regenerate expected output until the test passes. | Implementation and oracle can drift together away from the contract. | Restore the frozen expectation or obtain an explicit contract correction; challenge the checker with independent valid and violating observations. |
 | A screenshot proves the entire workflow. | A still image does not show all interactions or persistence. | Name the visible state it proves and add interaction/persistence observations for the remaining claims. |
 | The old build passed and fingerprints did not change. | The selected files may omit the edited input or delivered artifact. | Identify the tested source/build, include relevant dirty inputs, and rerun affected proof on the delivered result. |
+
+## READY preflight and repairable review
+
+Before Goal returns `READY_FOR_OUTER_REVIEW`, it performs an adversarial preflight and
+records the result in Execution and Verification. The preflight must check that every
+required A/G item has sufficient current evidence, no helper/mock result is standing in
+for required real-boundary proof, critical negative cases fail for the intended semantic
+reason, and no speculative/unused change, unexplained legacy path, duplicate state source
+or hidden design concern remains. A known gap produces BLOCKED/STALLED or continued work,
+not READY.
+
+Outer should make rejection easy to repair rather than maximize finding count. Cluster
+related symptoms under the root cause they demonstrate, name the implicated A/G IDs and
+required outcome, then classify the revision batch:
+
+- **REPAIR** — the current model and execution slicing remain sound; local implementation
+  or evidence corrections should converge.
+- **REPLAN** — a data/ownership/API shape, task decomposition or shared premise is wrong
+  enough that symptom-by-symptom patching is likely to repeat the defect.
+
+A REPLAN requires Goal to revise its model/checkpoint and slices before more implementation.
+If the same underlying root cause survives one completed revision, require a premise audit
+before another patch: state the shared assumption, evidence for and against it, and the
+revised model or slicing decision. Do not consume another review round on an equivalent
+patch merely because it changes different lines.
 
 ## Outer review checklist
 
