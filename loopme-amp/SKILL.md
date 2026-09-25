@@ -44,7 +44,10 @@ is not a dispatchable contract. This is the sole Goal Package.
   Then, with the minimum proof boundary recorded separately as Required proof. This
   structure is mandatory for behavior, artifact and invariant outcomes alike.
 - **Execution and Verification** — the proof obligations and counterexamples, mapped to A
-  and G IDs. Methods live here, not in Acceptance.
+  and G IDs, plus Goal-owned execution slicing, the active-slice engineering checkpoint
+  and final preflight. Methods live here, not in Acceptance. Slices are behavior-oriented
+  end-to-end units, not frontend/backend/test layers; exactly one implementation slice is
+  active at a time unless the task is already a single independently verifiable slice.
 - **Current Evidence** — one row per required A/G ID: status, observed result, evidence
   reference, tested boundary/source/build including uncommitted changes.
 - **Outer Review** — each review round, decision, findings and stop reason; preserve prior
@@ -53,7 +56,10 @@ is not a dispatchable contract. This is the sole Goal Package.
 Freeze the Given / When / Then meaning and minimum proof requirements, not every command
 or fixture path. Goal may refine methods without weakening the required boundary or
 changing the result. Resolve incomplete Given / When / Then items, vague outcomes, pure
-gate substitutes and missing credible proof paths before dispatch.
+gate substitutes and missing credible proof paths before dispatch. Seed Execution and
+Verification with the strongest task-specific invariants, dangerous states/event orders,
+likely failure surfaces and evidence traps you can justify from the contract and known
+system state; do not turn this risk brief into a predicted implementation plan.
 
 ### Freezing gates
 
@@ -195,10 +201,20 @@ all frozen acceptance items, regression risks and relevant checks — not only t
 examples. Reports are not proof. Rerun the smallest checks needed for important risks,
 verify at the required boundary, and check that each critical check would reject a
 well-formed violation for the intended reason. Record PASS only if satisfied; otherwise
-write one complete evidence-backed REJECT batch in task.md: failure, evidence, required
-change. From the first rejection, identify any shared invariant exposed by related
-failures and require controlled proof across the implicated states before expanding the
-repair.
+write one complete evidence-backed REJECT batch in task.md. Compress related findings
+under the repairable root cause they expose instead of returning a flat symptom list;
+for each root cause record the failure, evidence, implicated A/G IDs and required outcome.
+
+Classify the batch as **REPAIR** when the current model and execution slicing remain sound
+and the Goal can correct local implementation/evidence. Classify it as **REPLAN** when a
+data/ownership/API shape, task decomposition or shared premise is wrong enough that
+patching individual findings is likely to reproduce the defect. A REPLAN batch requires
+the Goal to revise its model/checkpoint and execution slices before further implementation.
+From the first rejection, identify any shared invariant exposed by related failures and
+require controlled proof across the implicated states before expanding the repair. If the
+same underlying root cause survives one completed revision, require a premise audit before
+another patch: name the shared assumption, evidence for/against it, and the revised model
+or slicing decision. Do not spend another round on an equivalent patch.
 
 Return one complete batch, then wait without steering. At `max_review_rounds` without
 PASS, report `REVIEW_LIMIT_REACHED` with findings by round, repeated and new issues,
