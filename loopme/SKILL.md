@@ -54,19 +54,32 @@ Then meaning when adapting tests.
   absolute role path, startup and session-recovery instructions. Peer use is optional;
   these instructions are not.
 - Execution and Verification: before dispatch, use known failure evidence and relevant
-  code boundaries to identify key invariants, dangerous states/event orders, and ways
-  evidence could falsely pass. Turn these into a few task-specific proof obligations,
-  not an implementation prescription or exhaustive test matrix. Supply a minimal
-  executable counterexample where risk is high and setup cheap; otherwise specify
-  the scenario and expected result. For bugs, require a failing minimal reproduction.
-  Before broad implementation/caller migration, Goal challenges the chosen high-risk
-  mechanism with its strongest known counterexample at the actual boundary; failure
-  means revise the mechanism, not expand it. Record invariant, experiment, expected/
-  observed failure reason, and tested surface in task.md. Each critical check must
-  accept valid success and reject a well-formed violation for the intended reason.
-  Helper/mocked proof does not cover production launch options or another platform:
-  verify the real entry path and final build; label unavailable native proof separately.
-  Finish reachable work without claiming that missing proof; no extra approval gate.
+  code boundaries to identify key invariants, dangerous states/event orders, likely
+  failure surfaces and ways evidence could falsely pass. Turn these into a few
+  task-specific proof obligations and evidence traps, not an implementation prescription
+  or exhaustive test matrix. Goal owns execution slicing: if the task is not already one
+  independently verifiable end-to-end unit, derive behavior-oriented slices mapped to
+  A/G IDs, keep exactly one implementation slice active, and record its engineering
+  checkpoint (invariant, relevant state/data shape, current evidence/hypothesis, smallest
+  justified next change and expected observable delta). Inside that slice, use short
+  evidence-driven feedback cycles rather than batching edits until slice completion;
+  focused checks may guide the next step, while slice proof and frozen Required proof keep
+  their stated boundaries. Supply a minimal executable
+  counterexample where risk is high and setup cheap; otherwise specify the scenario and
+  expected result. For bugs, require a failing minimal reproduction and supported failure
+  mechanism before treating a patch as the fix. Before broad implementation/caller
+  migration, Goal challenges the chosen high-risk mechanism with its strongest known
+  counterexample at the actual boundary; failure means revise the mechanism, not expand
+  it. Record invariant, experiment, expected/observed failure reason, and tested surface
+  in task.md. Each critical check must accept valid success and reject a well-formed
+  violation for the intended reason. Helper/mocked proof does not cover production launch
+  options or another platform: verify the real entry path and final build; label
+  unavailable native proof separately. Before READY, Goal records an adversarial preflight
+  covering current A/G evidence, real-boundary proof, negative-case semantics, changes
+  introduced/modified/directly relied on by this task, and unresolved in-scope design
+  assumptions. Pre-existing out-of-scope issues are risks rather than cleanup obligations
+  unless they violate the frozen contract, proof boundary or cause this task's regression.
+  Finish reachable work without claiming missing proof; no extra approval gate.
 - Current Evidence: initially unverified; map every required A/G ID to status
   (unverified, failed, needs recheck, verified), commands/results, evidence references,
   tested boundary and source/build, including uncommitted changes. One item may need
@@ -192,9 +205,13 @@ No Peer candidate eligible: PEER_RUNTIME_EXHAUSTED; Goal continues or changes ap
 ## Peers
 
 After initial scoping, Goal records substantial packages, owners, scopes and dependencies
-briefly in task.md. Prefer concurrent Peers for ready independent packages. A shared file
-or unsettled interface is a prerequisite to isolate, not a blanket veto: Goal owns that
-boundary and integration. If staying solo, name the concrete coupling or small scope
+briefly in task.md. A writing Peer package is ready only when it belongs to the current
+active slice and its other dependencies are settled. Prefer concurrent Peers for
+independent write scopes within that active slice. Later slices may receive read-only
+investigation for a named active-slice dependency, but no writer may implement them ahead
+of the active slice; switch slices only after current writers settle and the slice proof
+subset is verified. A shared file or unsettled interface is a prerequisite to isolate,
+not a blanket veto: Goal owns that boundary and integration. If staying solo, name the concrete coupling or small scope
 that makes delegation unhelpful, not merely "optional" or "tightly coupled".
 Reassess after the prerequisite resolves, a mechanism changes, or the first substantive
 REJECT. Consider distinct investigation/fixture work even when implementation is coupled.
@@ -204,7 +221,9 @@ Dispatch ready siblings before waiting; do not duplicate their questions, invent
 packages, impose a quota, or delegate the entire goal. Outer checks this decision at
 handoff, not through mid-execution supervision.
 
-Each assignment names its kind and owned deliverable; separates Supplied Context
+Each writing assignment names its Active slice U#; a read-only later-slice investigation
+names the current active-slice dependency it resolves. Each assignment also names its kind
+and owned deliverable; separates Supplied Context
 into Authoritative, Established and Uncertain; and supplies Required Starting
 Material, Expansion Boundary, Expansion Triggers, Expected Delta, explicit Write
 Scope, dependencies, shared interfaces and relevant proof obligations/completion
@@ -235,10 +254,26 @@ expectations, assertions, snapshots, test code and skip/filter configuration; do
 accept weaker tests as a repair. Distinguish observed violations from proof gaps and
 contract defects.
 Record PASS only when satisfied; missing, invalid or stale proof cannot count. Otherwise
-write the complete evidence-backed REJECT batch (failure, evidence, required change) in task.md.
-From the first rejection, identify any shared invariant exposed by related failures
-and require controlled proof across the implicated states/orders before expanding the
-repair or expensive verification—not equivalent local patches or an unrelated redesign.
+write one complete evidence-backed REJECT batch in task.md. Cluster related findings
+only when evidence supports a shared cause; if causality is uncertain, preserve separate
+counterexamples and label the proposed common cause as a hypothesis with the
+discriminating evidence still needed. Record the failure, evidence, implicated A/G IDs
+and required outcome for each established or hypothetical cluster.
+
+Classify the batch as **REPAIR** when the current model and execution slicing remain sound
+and local implementation/evidence corrections should converge. Classify it as **REPLAN**
+when a data/ownership/API shape, task decomposition or shared premise is wrong enough that
+symptom-by-symptom patching is likely to repeat the defect. A REPLAN requires Goal to
+revise its model/checkpoint and execution slices before further implementation.
+From the first rejection, identify any shared invariant exposed by related failures and
+require controlled proof across the implicated states/orders before expanding the repair
+or expensive verification. If the same underlying root cause survives one completed
+revision, require a premise audit before another patch. Require the shared assumption,
+supporting and contradicting observations, the existing evidence or smallest experiment
+that distinguishes competing explanations, and how each possible observation changes the
+next implementation step. Do not spend another review round on an equivalent patch
+without new discriminating evidence.
+
 Return one complete batch only while below the review limit, then wait without steering.
 At max_review_rounds without PASS, report REVIEW_LIMIT_REACHED with findings by round,
 repeated/new issues, suspected design/requirement problem, current evidence and options

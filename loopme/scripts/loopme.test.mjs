@@ -174,6 +174,7 @@ test('init scaffolds required Given-When-Then acceptance, gates and evidence wit
   assert.match(frozen, /^G1 — /m);
   assert.match(plan, /^P1 -> A1:/m);
   assert.match(plan, /^G1:/m);
+  assert.match(plan, /^Preflight: pending;/m);
   const rows = evidence.split('\n').filter(line => /^\| [AG]\d+ \|/.test(line))
     .map(line => line.split('|').slice(1, -1).map(cell => cell.trim()));
   assert.deepEqual(rows, [
@@ -234,9 +235,21 @@ test('init scaffolds scoped context, decisions, deliverables and Peer Runtime wi
   assert.match(frozen, /Do not promote assumptions to facts or pending choices to frozen decisions/);
   assert.match(frozen, /Goal may change methods in Execution and Verification, not acceptance meaning or minimum proof/);
   assert.doesNotMatch(frozen, /^Plan:/m);
-  for (const field of ['Plan', 'Unknown resolution']) {
+  for (const field of ['Execution slices', 'Active slice', 'Engineering checkpoint', 'Plan', 'Unknown resolution']) {
     assert.match(execution, new RegExp(`^${field}: <[^>]+>$`, 'm'), `missing execution field: ${field}`);
   }
+  assert.match(execution, /^Preflight: pending;/m);
   assert.equal(result.dispatched, false);
   assert.deepEqual(await fs.readdir(result.run_dir), ['task.md']);
+});
+test('Herdr Goal protocol binds writers to the active slice and keeps review evidence-driven', async () => {
+  const goal = await fs.readFile(fileURLToPath(new URL('../references/goal-agent.md', import.meta.url)), 'utf8');
+  const acceptance = await fs.readFile(fileURLToPath(new URL('../references/acceptance.md', import.meta.url)), 'utf8');
+  assert.match(goal, /writing Peer assignment is ready only when it belongs to the current active\s+slice/);
+  assert.match(goal, /Later slices may receive read-only investigation/);
+  assert.match(goal, /Active slice: the current U#/);
+  assert.match(goal, /Pre-existing\s+out-of-scope issues are risks, not cleanup obligations/);
+  assert.match(goal, /smallest experiment that can\s+discriminate competing explanations/);
+  assert.match(acceptance, /Cluster\s+findings only when evidence supports a shared cause/);
+  assert.match(acceptance, /Within the active slice, use short feedback cycles/);
 });

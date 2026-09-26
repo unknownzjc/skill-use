@@ -53,13 +53,54 @@ Peers return evidence to you; only you write during execution. Stop writing
 when handing control to the Outer. If the file is missing, ask the Outer to
 restore it from preserved records rather than inventing its contents.
 
+## Execution Granularity
+
+Before broad implementation, decide whether the frozen task is already one independently
+verifiable end-to-end slice. If not, derive behavior-oriented execution slices in
+Execution and Verification. Each slice must name the A/G IDs it advances, an observable
+done predicate and the proof subset you can check when it settles. Do not split work by
+technical layers such as backend/frontend/tests. Keep exactly one implementation slice
+active; later slices may be investigated to resolve named dependencies, but do not
+bulk-implement them ahead of the current checkpoint.
+
+Before editing the active slice, record a concise engineering checkpoint in task.md:
+
+- the invariant the slice must preserve or establish,
+- the relevant state/data shape and ownership when they matter,
+- the current observation, reproduction or falsifiable hypothesis,
+- why the next change is the smallest move justified by that evidence,
+- the observable delta expected if the move is correct.
+
+An execution slice is a narrow behavior-level outcome, not the smallest edit. Within the
+active slice, use short feedback cycles: choose one behavior or hypothesis, run the
+cheapest valid discriminating check, make the smallest justified change, observe the
+result, and let that result determine the next step. Focused seams/mechanism experiments
+are valid inner feedback; they do not each need full real-environment acceptance. Verify
+the settled slice against its named proof subset before activating the next one, and use
+the frozen Required proof at the boundary where the contract requires it.
+
+A non-user-visible prerequisite is allowed when it names the slice(s) it enables, the
+invariant/capability it establishes and a check that can falsify it. This is not a
+design-document gate. For a trivial local change, explicitly record that no new model is
+warranted. For a bug, establish a supported failure mechanism before treating a patch as
+the fix; eliminate competing causes with the cheapest discriminating evidence available.
+
+Keep only evidence-justified changes. If a speculative change does not advance an
+acceptance/gate predicate, diagnostic hypothesis or required intermediate invariant,
+remove it before handoff instead of retaining defensive code because it "might help."
+
 ## Peer Agents
 
 After initial scoping, record substantial packages, owners, scopes and dependencies
-in task.md. Prefer concurrent Peers for ready independent work; dispatch ready
-siblings before waiting. Keep shared files and integration Goal-owned, agree the
-interface, and separate the remaining scopes rather than declaring the whole task
-coupled. Do not duplicate Peer work or delegate the entire goal.
+in task.md. A writing Peer assignment is ready only when it belongs to the current active
+slice and its other dependencies are settled. Prefer concurrent Peers for independent
+write scopes within that active slice; dispatch those ready siblings before waiting.
+Later slices may receive read-only investigation for a named dependency, but no writer
+may implement them ahead of the active slice. Before switching slices, all writers for
+the current slice must settle and the slice proof subset must be verified. Keep shared
+files and integration Goal-owned, agree the interface, and separate the remaining scopes
+rather than declaring the whole task coupled. Do not duplicate Peer work or delegate the
+entire goal.
 Mechanism proof is a package dependency too: do not dispatch broad dependent
 implementation merely because file scopes are disjoint. Settle and run the minimal
 experiment before that writing batch; do not postpone it until integration.
@@ -117,6 +158,8 @@ rather than handing the same work through separate research and coding agents.
 Give each Peer Agent one clear and bounded knowledge gap or deliverable. Its
 assignment must contain:
 
+- Active slice: the current U# for any writing assignment; read-only later-slice
+  investigation must name the active-slice dependency it resolves,
 - the assignment kind and owned deliverable,
 - Supplied Context, separated into Authoritative, Established, and Uncertain,
 - Required Starting Material,
@@ -201,25 +244,43 @@ entry path with its actual launch options/runtime; helper-only tests do not cove
 Preserve the tested process's exit status through pipelines/wrappers. Run expensive
 verification only after the relevant controlled boundaries and checker checks pass.
 
-Before READY, challenge coverage, failure reasons and current-source/build evidence;
-resolve gaps autonomously. Keep evidence in task.md, not another self-review report;
-no intermediate approval. Passing supplied examples alone is not readiness.
+Before READY, perform an adversarial preflight and record the result in Execution and
+Verification, not another self-review file. Confirm every required A/G item has sufficient
+current evidence; no helper/mock result substitutes for required real-boundary proof;
+critical negative cases fail for the intended semantic reason; and changes introduced,
+modified or directly relied on by this task contain no unsupported speculative branch,
+duplicate state source, compatibility shim or hidden in-scope design concern. Pre-existing
+out-of-scope issues are risks, not cleanup obligations; do not modify or block READY on
+them unless they violate the frozen contract, required proof boundary or create a
+regression in this task. Use a read-only Peer for this preflight on high-risk or
+multi-slice work when useful, rather than duplicating implementation. Resolve blocking
+gaps autonomously; if one cannot be resolved, return BLOCKED/STALLED instead of READY.
+Passing supplied examples alone is not readiness.
 
 ## Review Feedback
 
 If the Outer rejects your submission, read the recorded Outer Review in the
 task file and treat its findings as new input.
 
-Address the batch's shared invariants and implicated states/event orders, not just
-each failing example. Investigate the evidence, fix the common cause where shown,
-and prove the affected boundaries before expensive verification. Keep the fix
-within scope; do not infer a broad redesign from a local failure.
+Treat the batch classification as part of the work. For **REPAIR**, address the shared
+invariants and implicated states/event orders, not just each failing example. Investigate
+the evidence, fix the common cause where shown, and prove the affected boundaries before
+expensive verification. Keep the fix within scope.
 
-Update the task file's evidence, then submit again for Outer Loop review.
+For **REPLAN**, do not patch the listed symptoms one by one. Revisit the active engineering
+checkpoint and execution slicing first: name the data/ownership/API shape, decomposition
+or shared premise that failed, then record the revised model and slices before further
+implementation. If the same underlying root cause survived a completed revision, perform
+a premise audit before another patch: state the shared assumption; supporting and
+contradicting observations; the existing evidence or smallest experiment that can
+discriminate competing explanations; and how each possible observation changes the next
+implementation step. Do not submit an equivalent patch without new discriminating
+evidence.
 
-Treat review feedback as one complete batch for the current round. If feedback
-appears to expand or contradict the frozen acceptance criteria, report the
-conflict instead of silently widening the goal.
+Update the task file's evidence, then submit again for Outer Loop review. Treat review
+feedback as one complete batch for the current round. If feedback appears to expand or
+contradict the frozen acceptance criteria, report the conflict instead of silently
+widening the goal.
 
 ## Completion
 
