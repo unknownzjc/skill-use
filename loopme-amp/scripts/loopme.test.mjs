@@ -263,6 +263,22 @@ test('Amp Goal brief carries revision, scoped preflight and evidence-driven feed
   assert.match(brief, /^## Review Feedback$/m);
   assert.match(brief, /\*\*REPAIR\*\*/);
   assert.match(brief, /\*\*REPLAN\*\*/);
+
+  const feedback = brief.split(/^## Review Feedback$/m)[1].split(/^## Handoff$/m)[0];
+  const replanRequiresRevisionBeforeImplementation = text => {
+    const normalized = text.replace(/\s+/g, ' ');
+    const start = normalized.indexOf('**REPLAN**');
+    const end = normalized.indexOf('- If review feedback', start);
+    if (start < 0 || end < 0) return false;
+    const replan = normalized.slice(start, end);
+    const ordering = replan.indexOf('Before further implementation');
+    const revision = replan.indexOf('revised model, engineering checkpoint and execution slices');
+    return ordering >= 0 && revision > ordering;
+  };
+  assert.equal(replanRequiresRevisionBeforeImplementation(feedback), true);
+  const mutatedFeedback = feedback.replace('Before further implementation, ', '');
+  assert.equal(replanRequiresRevisionBeforeImplementation(mutatedFeedback), false);
+
   assert.match(brief, /Pre-existing out-of-scope issues are risks, not cleanup obligations/);
   assert.match(brief, /smallest experiment that can\s+discriminate competing explanations/);
   assert.match(acceptance, /Cluster\s+findings only when evidence supports a shared cause/);
